@@ -147,17 +147,9 @@ function showRequest(formData, jqForm, options) {
 }
 
 function timeBoxClicked(e){
-    //TODO: KESKEN!! -MITEN?
-    /*
-    ota timeboxin intervalli
-    get notes by interval
-    populate notes div
-    (valitse ensimmäinen note, jos on noteja, eli laita se note info formiin muokattavaksi.)
-     */
     //console.log("time box click'd!");
     var timeBox = $(e.target);
     selectedTimeBox = timeBox;
-    // TODO: AAAAAAAAAA
     updateNotesDiv();
     updateNewNoteForm();
 
@@ -287,6 +279,10 @@ function updateNotesDiv(){
     }
     var contentsOfTimeBoxDiv = $('#contents-of-time-box-div');
     contentsOfTimeBoxDiv.empty();
+    var intervalSpan = $('#selected-time-box-interval-span');
+    var intervalString = selectedTimeBox.attr('data-start') + " to " + selectedTimeBox.attr('data-end');
+    intervalSpan.text(intervalString);
+
     var notes = getNotesInTimeBoxInterval(timeBox);
     var noteRepElement = $('#template-storage-div .js-note-rep');
     notes.forEach(function(note){
