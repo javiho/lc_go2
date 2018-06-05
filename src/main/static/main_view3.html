@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+{{$root := .}}
+<head>
+    <meta charset="UTF-8">
+    <title>Main View Title</title>
+    <link rel="stylesheet" type="text/css" href="/static/style.css"/>
+    <script type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="/static/chosen.min.css">
+    <script type='text/javascript' src='/static/chosen.jquery.min.js'></script>
+    <script type='text/javascript' src="/static/main.js"></script>
+    <!-- chosen_v1.8.3/ -->
+</head>
+<body>
+<div id="root">
+    <div id="lc-options-div">
+        <form id="lc-options-form" action="/lc_options_changed" method="post">
+            <label for="resolution-unit-select">
+                Select time unit:
+            </label>
+            <select id="resolution-unit-select" name="resolution-unit" form="lc-options-form" data-default-selected="{{.ResolutionUnit}}">
+            {{range .AllResolutionUnits}}
+                <option value="{{.}}">{{.}}</option>
+            {{end}}
+            </select>
+            <label for="life-start-input">Birth date:</label>
+            <input id="life-start-input" name="life-start" type="date" value="{{.LifeStart}}" min="1910-01-01" max="2200-01-01" required>
+            <span class="js-error-info-icon">🛈</span>
+            <label for="life-end-input">Estimated death date:</label>
+            <input id="life-end-input" name="life-end" type="date" value="{{.LifeEnd}}" min="1910-01-01" max="2200-01-01" required>
+            <span class="js-error-info-icon">🛈</span>
+            <!--
+            <select id="visible-notes-select" name="visible-notes" class="chosen-select" data-placeholder="Choose visible notes..."
+                    multiple form="lc-options-form">
+                <option value="volvo">Volvo</option>
+                <option value="saab">Saab</option>
+                <option value="mercedes">Mercedes</option>
+                <option value="audi">Audi</option>
+            </select>
+            -->
+            <!--
+            <select id="visible-stripes-select" name="visible-stripes" form="lc-options-form">
+            </select>
+            -->
+        </form>
+    </div>
+    <div id="life-calendar">
+    {{$timeBoxes := .TimeBoxes}}
+    {{range $timeBoxes}}
+        <div data-id="{{.Id}}" class="time-box js-time-box" data-start="{{.StartAsString}}" data-end="{{.EndAsString}}">
+            <div class="time-box-interval-text js-past-future-coloring">
+            {{.IntervalAsPresentableString $root.ResolutionUnit}}
+            </div>
+            <div class="tb-past-future-stripe js-tb-past-future-stripe"></div>
+        {{range .NoteBoxes}}
+            <div class="note-box-unclickable js-note-box"
+                 data-categories="{{range .Note.Categories}}{{.Name}} {{end}}"
+                 data-note-text="{{.Note.Text}}" data-note-start="{{.Note.StartAsString}}" data-note-end="{{.Note.EndAsString}}"
+                 data-note-color="{{.Note.Color}}" data-note-id="{{.Note.Id}}">
+                <div>{{.Note.Text}}</div>
+                <!-- <input type="text" name={{.Id}} data-note-id={{.Note.Id}} value={{.Note.Text}}> -->
+            </div>
+        {{end}}
+        </div>
+    {{end}}
+    </div>
+    <div id="side-bar-div">
+        <div id="notes-div">
+            <h3>Content of this time box</h3>
+        {{range .Notes}}
+            <div class="note-rep js-note-rep" data-note-text="{{.Text}}" data-note-start="{{.StartAsString}}"
+                 data-note-end="{{.EndAsString}}" data-note-color="{{.Color}}" data-note-id="{{.Id}}">
+            {{.Text}}
+            </div>
+        {{end}}
+            <form id="new-note-form" action="/note_added" method="post">
+                Create new note:
+                <p>
+                    <label for="new-note-text">Text</label>
+                    <input type="text" id="new-note-text" name="note-text" value="(Placeholder)">
+                </p>
+                <p>
+                    <label for="new-note-color">Color</label>
+                    <input type="color" id="new-note-color" name="note-color" value="(None selected)">
+                </p>
+                <p>
+                    <label for="new-note-start">Start</label>
+                    <input type="date" id="new-note-start" name="note-start" value="(None selected)">
+                </p>
+                <p>
+                    <label for="new-note-end">End</label>
+                    <input type="date" id="new-note-end" name="note-end" value="(None selected)">
+                </p>
+                <p>
+                    <input type="submit" value="Create">
+                </p>
+            </form>
+        </div>
+        <div id="note-info-div">
+            <h3>Selected note</h3>
+            <form id="edit-note-form" action="/note_changed" method="post">
+                <input type="text" id="note-selected-text" name="note-text" value="(None selected)">
+                <br/>
+                <input type="color" id="note-selected-color" name="note-color" value="(None selected)">
+                <br/>
+                <input type="date" id="note-selected-start" name="note-start" value="(None selected)">
+                <br/>
+                <input type="date" id="note-selected-end" name="note-end" value="(None selected)">
+                <br/>
+                <!--
+                <p>Note beginning: <span id="note-start">(None selected)</span></p>
+                <p>Note end: <span id="note-end">(None selected)</span></p>
+                -->
+                <input type="submit" name="save-submit" value="Save note!">
+                <input type="submit" name="delete-submit" value="Delete note">
+                <br/>
+                <input id="selected-note-id" type=hidden name="note-id" value="(None)">
+            </form>
+        </div>
+        <div id="note-visibility-div">
+            <h3>Visible notes</h3>
+            <div id="visible-notes-select-box">
+                <form id="note-visibility-form" action="/note_visibilities_changed" method="post"></form>
+            {{range $note, $visibility := .NoteVisibilities}}
+                <div>
+                    <div class="note-rep js-note-rep" data-note-text="{{$note.Text}}" data-note-start="{{$note.StartAsString}}"
+                         data-note-end="{{$note.EndAsString}}" data-note-color="{{$note.Color}}" data-note-id="{{$note.Id}}">
+                        <input type="checkbox" name="{{$note.Id}}" checked={{$visibility}}>
+                    {{$note.Text}}
+                    </div>
+                </div>
+            {{end}}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Possible error messages from server -->
+<div id="server-error-messages-div" hidden>
+    <p>The following errors occurred:</p>
+{{range .Errors}}
+    <p class="js-server-error-message">{{.}}</p>
+{{end}}
+</div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+</body>
+</html>
