@@ -11,7 +11,7 @@
 <div class="container-fluid">
 
 <div class="row">
-    <div class="col-10">
+    <div class="col-8">
         <form id="lc-options-form" class="form-inline needs-validation" data-action="/change_options" data-method="put" novalidate>
             <label for="resolution-unit-select">Select time unit:</label>
             <select id="resolution-unit-select" class="form-control" name="resolution-unit" form="lc-options-form"
@@ -30,6 +30,11 @@
         </form>
     </div>
     <div class="col-2">
+        <button id="zoom-in-button" class="btn" type="button">Zoom in</button>
+        <button id="zoom-out-button" class="btn" type="button">Zoom out</button>
+        <button id="restore-default-zoom-button" class="btn" type="button">Default zoom</button>
+    </div>
+    <div class="col-2">
         <button class="btn" type="button" data-toggle="collapse" data-target="#notes-control-panel">Show side bar</button>
     </div>
 </div>
@@ -39,13 +44,18 @@
         </div>
     </div>
     <div class="col-2 collapse show" id="notes-control-panel">
+        <div id="note-visibilities-div" class="border rounded p-1">
+            Visible notes:
+            <div id="note-visibility-item-container">
+                <!-- Note visibility items are added dynamically. -->
+            </div>
+        </div>
         <div id="notes-div" class="border rounded p-1">
             <p>Notes in interval <span id="selected-time-box-interval-span"></span></p>
             <div id="contents-of-time-box-div">
                 <!-- Note reps are added dynamically. -->
             </div>
         </div>
-        <br>
         <div id="note-changing-div" class="border rounded p-1">
         <form id="note-changing-form" data-action="/change_note" data-method="post">
             <div class="form-group">
@@ -102,10 +112,10 @@
 
 <!-- This is storage area for "templates" which can be cloned elsewhere. -->
 <div id="template-storage-div" hidden>
-    <div data-id="(empty)" class="time-box js-time-box" data-start="(empty)" data-end="(empty)">
-        <div class="time-box-interval-text tb-past-future-stripe js-past-future-coloring">
-            <!-- Interval as presentable text, eg. 6/2018 - 7/2018 when the resolution unit is month. -->
-        </div>
+    <div data-id="(empty)" class="time-box js-time-box d-flex flex-wrap" data-start="(empty)" data-end="(empty)">
+        <!--<div class="time-box-interval-text tb-past-future-stripe js-past-future-coloring">
+             Interval as presentable text, eg. 6/2018 - 7/2018 when the resolution unit is month.
+        </div>-->
         <!-- Possible note boxes here. -->
     </div>
 
@@ -115,6 +125,13 @@
 
     <div class="note-rep js-note-rep" data-note-id="(empty)">
         <!-- Representation of a note. -->
+    </div>
+
+    <div class="form-check note-visibility-item js-note-visibility-item" data-note-id="(empty)">
+        <input class="form-check-input js-note-visibility-item-checkbox" type="checkbox" value="(empty)" id="(if you see this, some one has fuck'd up bad!)">
+        <label class="form-check-label js-note-visibility-item-label" for="(if you see this, some one has fuck'd up bad!)">
+            <!-- label here -->
+        </label>
     </div>
 </div>
 

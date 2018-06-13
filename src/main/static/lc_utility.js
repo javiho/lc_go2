@@ -113,4 +113,14 @@ var lcUtil = {};
         */
     }
 
+    /*
+        Pre-condition: removed and array are not undefined.
+        Returns an array without the removed element, or elements if there are several same elements.
+     */
+    context.arrayWithoutElement = function(removed, array){
+        console.assert(removed !== undefined);
+        console.assert(array !== undefined);
+        return array.filter(element => element !== removed);
+    }
+
 })(lcUtil);

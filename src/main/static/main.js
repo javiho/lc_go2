@@ -4,10 +4,19 @@ var resolutionUnit = "Week"; // TODO: saatava serveriltä, ehkä samalla kertaa 
 //$(initialize);
 $(document).ready(initialize);
 
+const zoomInButtonId = 'zoom-in-button';
+const zoomOutButtonId = 'zoom-out-button';
+const restoreDefaultZoomButtonId = 'restore-default-zoom-button';
+const zoomStep = 10; //px
+const timeBoxDefaultWidth = 49;
+const timeBoxDefaultHeight = 49;
+
+
 var life;
 var lcOptionsForm;
 
 var selectedTimeBox = null;
+var visibleNotes = []; // Stores the Note objects of which are visible in the calendar.
 
 const isInvalidClass = "is-invalid";
 
@@ -99,6 +108,7 @@ function initialize(){
 
     $(document).click(function(e){
         var eventTargetJQuery = $(e.target);
+        console.log("eventTarget:", eventTargetJQuery);
         // if(eventTargetJQuery.is(".js-note-box")){
         //     editNoteButtonClicked(e);
         // }
@@ -108,7 +118,50 @@ function initialize(){
             timeBoxClicked(e);
         }
         if(eventTargetJQuery.is(".js-note-rep")){
-            noteRepClicked(e);
+            noteRepClicked($(e.target));
+        }
+        /*if(eventTargetJQuery.is(".js-note-visibility-item")){
+            // TODO: täytyy selkeyttää note-repin määritelmää - nyt kahta erilaista itemiä eri
+            // näkymissä pidetään note-repinä, ja se on ok
+            noteRepClicked($(e.target));
+        }*/
+        if(eventTargetJQuery.is(".js-note-visibility-item-label")){
+            var noteVisibilityItem = eventTargetJQuery.parent(); // It's parent has the data attribute needed.
+            noteRepClicked(noteVisibilityItem);
+        }
+        if(eventTargetJQuery.is(".js-note-visibility-item-checkbox")){
+            console.log("checkbx state changedd!");
+            // Note: Changing the value of an input element using JavaScript, using .val() for example, won't fire the event.
+            var checked = eventTargetJQuery[0].checked;
+            var noteId = eventTargetJQuery.parent().attr('data-note-id');
+            var note = getNoteById(noteId);
+            console.assert(note !== undefined, "Note of id " + noteId + " is undefined.");
+            if(checked){
+                if(!visibleNotes.includes(note)){
+                    visibleNotes.push(note);
+                }
+            }else{
+                if(visibleNotes.includes(note)){
+                    var originalLength = visibleNotes.length;
+                    visibleNotes = lcUtil.arrayWithoutElement(note, visibleNotes);
+                    console.assert(visibleNotes.length < originalLength, "Bug.");
+                }
+            }
+            updateLifeCalendar();
+        }
+        if(eventTargetJQuery.attr('id') === zoomInButtonId){
+            //var minWidth = $(this).css('min-width');
+            //var maxWidth = $(this).css('max-width');
+            $('.time-box').css('min-width', '+=' + zoomStep).css('max-width', '+=' + zoomStep);
+            $('.time-box').css('min-height', '+=' + zoomStep).css('max-height', '+=' + zoomStep);
+        }
+        if(eventTargetJQuery.attr('id') === zoomOutButtonId){
+            $('.time-box').css('min-width', '-=' + zoomStep).css('max-width', '-=' + zoomStep);
+            $('.time-box').css('min-height', '-=' + zoomStep).css('max-height', '-=' + zoomStep);
+        }
+        if(eventTargetJQuery.attr('id') === restoreDefaultZoomButtonId){
+            $('.time-box').css('min-width', timeBoxDefaultWidth).css('max-width', timeBoxDefaultWidth);
+            $('.time-box').css('min-height', timeBoxDefaultHeight).css('max-height', timeBoxDefaultHeight);
         }
     });
 
@@ -127,6 +180,7 @@ function glueMainPageData(data){
     datifyLifeObject();
     console.log("life");
     console.log(life);
+    visibleNotes = life.Notes;
     updateLifeComponents();
 }
 
@@ -162,34 +216,11 @@ function timeBoxClicked(e){
         //console.assert(notesInTimeBox[0] !== undefined, "Undefined note.");
         populateNoteChangingForm(notesInTimeBox[0]);
     }
-    /*
-    console.log("time box click'd!");
-    var timeBox = $(e.target);
-    var noteBoxes = timeBox.find('div.js-note-box');
-    var noteIds = [];
-    //TODO: () => noteIds.push($(this).data.noteId) EI TOIMI, MUTTA MIKSI? MITEN THIS TOIMII?
-    noteBoxes.each(function() {
-        noteIds.push($(this).data('note-id'));
-    });
-    var allNoteReps = $('.js-note-rep');
-    allNoteReps.each(function(){
-        var self = $(this); // TODO: miten this toimii?
-        var noteId = self.data('note-id');
-        if(noteIds.includes(noteId)){
-            self.show(400);
-        }else{
-            self.hide();
-        }
-    });
-    var tbStart = timeBox.data('start');
-    var tbEnd = timeBox.data('end');
-    $('#new-note-start').attr('value', tbStart);
-    $('#new-note-end').attr('value', tbEnd);*/
 }
 
-function noteRepClicked(e){
+function noteRepClicked(jQuery){
     //console.log("note-rep click'd!");
-    var noteRep = $(e.target);
+    var noteRep = jQuery;
     console.assert(noteRep !== undefined, "noteRep undefined");
     var id = noteRep.data("note-id");
     console.log("note rep click'd of id", id);
@@ -239,6 +270,7 @@ function updateLifeComponents(){
     updateLifeOptions();
     updateLifeCalendar();
     updateNotesDiv();
+    updateNoteVisibilitiesDiv();
 }
 
 function updateLifeOptions(){
@@ -260,13 +292,20 @@ function updateLifeCalendar(){
         var newTimeBoxElement = timeBoxElement.clone();
         newTimeBoxElement.attr("data-start", timeBoxDO.Start.format(isoDateFormatString));
         newTimeBoxElement.attr("data-end", timeBoxDO.End.format(isoDateFormatString));
-        var intervalElement = newTimeBoxElement.children('.js-past-future-coloring');
-        intervalElement.text( lcUtil.intervalToPresentableString(timeBoxDO.Start, timeBoxDO.End, resolutionUnit) );
+        // TODO: intervalli timeboxissa poistettu
+        //var intervalElement = newTimeBoxElement.children('.js-past-future-coloring');
+        //intervalElement.text( lcUtil.intervalToPresentableString(timeBoxDO.Start, timeBoxDO.End, resolutionUnit) );
         timeBoxDO.NoteBoxes.forEach(function(noteBox){
             var newNoteBoxElement = noteBoxElement.clone();
             newNoteBoxElement.attr('data-note-id', noteBox.Note.Id);
             newNoteBoxElement.text(noteBox.Note.Text);
+            var noteColor = noteBox.Note.Color;
+            newNoteBoxElement.css("background-color", noteColor);
             newNoteBoxElement.appendTo(newTimeBoxElement);
+
+            if(!visibleNotes.includes(noteBox.Note)){
+                newNoteBoxElement.hide();
+            }
         });
         newTimeBoxElement.appendTo(lifeCalendarElement);
     });
@@ -307,6 +346,31 @@ function updateNewNoteForm(){
     $('#new-note-start').val(start);
     $('#new-note-end').val(end);
 }
+
+function updateNoteVisibilitiesDiv() {
+    var originalJsNoteVisibilityItem = $('#template-storage-div .js-note-visibility-item');
+    console.assert(originalJsNoteVisibilityItem.length === 1, "Problems in storage area.");
+    var noteVisibilityItemContainer = $('#note-visibility-item-container');
+    noteVisibilityItemContainer.empty();
+    life.Notes.forEach(function(note){
+        var newNoteVisibilityItem = originalJsNoteVisibilityItem.clone();
+        var inputDomId = lcUtil.generateUniqueId();
+        newNoteVisibilityItem.find('input').attr('id', inputDomId);
+        newNoteVisibilityItem.find('label').attr('for', inputDomId);
+
+        newNoteVisibilityItem.attr('data-note-id', note.Id);
+        newNoteVisibilityItem.find('input').val(note.Id); // tämä lähetetään submitatessa (jos submitataan): name=value
+        newNoteVisibilityItem.find('label').text(note.Text);
+        newNoteVisibilityItem.css('background-color', note.Color);
+        noteVisibilityItemContainer.append(newNoteVisibilityItem);
+
+        if(visibleNotes.includes(note)){
+            newNoteVisibilityItem.find('input').attr('checked', 'checked');
+        }
+    });
+}
+
+
 
 /*
     Returns array of notes or empty array.

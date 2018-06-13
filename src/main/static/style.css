@@ -1,10 +1,10 @@
 .time-box{
     border: 1px solid black;
-    padding: 0.2em;
-    min-width: 5em;
-    max-width: 5em;
-    min-height: 3em;
-    max-height: 3em;
+    padding: 2px;
+    min-width: 49px;
+    max-width: 49px;
+    min-height: 49px;
+    max-height: 49px;
     /*min-width: 10em;
     max-width: 10em;
     min-height: 6em;
@@ -22,6 +22,11 @@
 
 .note-box{
     pointer-events: none;
+    max-width: 20px;
+    min-width: 20px;
+    max-height: 20px;
+    min-height: 20px;
+    overflow: hidden;
 }
 
 #life-calendar{
