@@ -7,7 +7,8 @@ $(document).ready(initialize);
 const zoomInButtonId = 'zoom-in-button';
 const zoomOutButtonId = 'zoom-out-button';
 const restoreDefaultZoomButtonId = 'restore-default-zoom-button';
-const zoomStep = 10; //px
+//const zoomStep = 10; //px
+const zoomMultiplier = 1.2;
 const timeBoxDefaultWidth = 49;
 const timeBoxDefaultHeight = 49;
 
@@ -108,12 +109,7 @@ function initialize(){
 
     $(document).click(function(e){
         var eventTargetJQuery = $(e.target);
-        console.log("eventTarget:", eventTargetJQuery);
-        // if(eventTargetJQuery.is(".js-note-box")){
-        //     editNoteButtonClicked(e);
-        // }
-        //console.log("We have detected a click! Target: ");
-        //console.log(e.target);
+        //console.log("eventTarget:", eventTargetJQuery);
         if(eventTargetJQuery.is(".js-time-box")){
             timeBoxClicked(e);
         }
@@ -152,12 +148,28 @@ function initialize(){
         if(eventTargetJQuery.attr('id') === zoomInButtonId){
             //var minWidth = $(this).css('min-width');
             //var maxWidth = $(this).css('max-width');
-            $('.time-box').css('min-width', '+=' + zoomStep).css('max-width', '+=' + zoomStep);
-            $('.time-box').css('min-height', '+=' + zoomStep).css('max-height', '+=' + zoomStep);
+            //$('.time-box').css('min-width', '+=' + zoomStep).css('max-width', '+=' + zoomStep);
+            //$('.time-box').css('min-height', '+=' + zoomStep).css('max-height', '+=' + zoomStep);
+            var multiplierFunction = function(index, value){
+                return parseFloat(value) * zoomMultiplier;
+            };
+            $('.time-box').css({
+                minWidth: multiplierFunction,
+                maxWidth: multiplierFunction,
+                minHeight: multiplierFunction,
+                maxHeight: multiplierFunction
+            });
         }
         if(eventTargetJQuery.attr('id') === zoomOutButtonId){
-            $('.time-box').css('min-width', '-=' + zoomStep).css('max-width', '-=' + zoomStep);
-            $('.time-box').css('min-height', '-=' + zoomStep).css('max-height', '-=' + zoomStep);
+            var dividerFunction = function(index, value){
+                return parseFloat(value) * (1 / zoomMultiplier);
+            };
+            $('.time-box').css({
+                minWidth: dividerFunction,
+                maxWidth: dividerFunction,
+                minHeight: dividerFunction,
+                maxHeight: dividerFunction
+            });
         }
         if(eventTargetJQuery.attr('id') === restoreDefaultZoomButtonId){
             $('.time-box').css('min-width', timeBoxDefaultWidth).css('max-width', timeBoxDefaultWidth);
