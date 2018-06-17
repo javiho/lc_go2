@@ -34,6 +34,14 @@
     pointer-events: none; /* Must not prevent clicking the button they are in. */
 }
 
+.selected-time-box{
+    border: 2px dashed green;
+}
+
+.selected-time-box-range{
+    border: 2px dotted cyan;
+}
+
 #life-calendar{
     border: 2px dashed red;
     max-height: 90vh;

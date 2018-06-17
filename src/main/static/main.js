@@ -7,6 +7,7 @@ $(document).ready(initialize);
 const zoomInButtonId = 'zoom-in-button';
 const zoomOutButtonId = 'zoom-out-button';
 const restoreDefaultZoomButtonId = 'restore-default-zoom-button';
+const selectedTimeBoxClass = 'selected-time-box';
 //const zoomStep = 10; //px
 const zoomMultiplier = 1.2;
 const timeBoxDefaultWidth = 49;
@@ -16,7 +17,7 @@ const timeBoxDefaultHeight = 49;
 var life;
 var lcOptionsForm;
 
-var selectedTimeBox = null;
+var selectedTimeBox = null; // TODO: Jos dataa laitetaan DOMiin, niin tämänkin voisi
 var visibleNotes = []; // Stores the Note objects of which are visible in the calendar.
 
 const isInvalidClass = "is-invalid";
@@ -110,9 +111,6 @@ function initialize(){
     $(document).click(function(e){
         var eventTargetJQuery = $(e.target);
         //console.log("eventTarget:", eventTargetJQuery);
-        if(eventTargetJQuery.is(".js-time-box")){
-            timeBoxClicked(e);
-        }
         if(eventTargetJQuery.is(".js-note-rep")){
             noteRepClicked($(e.target));
         }
@@ -175,6 +173,17 @@ function initialize(){
             $('.time-box').css('min-width', timeBoxDefaultWidth).css('max-width', timeBoxDefaultWidth);
             $('.time-box').css('min-height', timeBoxDefaultHeight).css('max-height', timeBoxDefaultHeight);
         }
+
+        if(eventTargetJQuery.is(".js-time-box")){
+            /* This happens only if shift is being pressed while clicking. */
+            if(e.shiftKey){
+                timeBoxClicked(e, true);
+            }else{
+                timeBoxClicked(e);
+            }
+        }
+
+
     });
 
     $.getJSON("/get_main_page_data", glueMainPageData);
@@ -212,10 +221,25 @@ function showRequest(formData, jqForm, options) {
     return true;
 }
 
-function timeBoxClicked(e){
+function timeBoxClicked(e, multiSelectionOn = false){
     //console.log("time box click'd!");
     var timeBox = $(e.target);
-    selectedTimeBox = timeBox;
+
+    var timeBoxIsSelected = selectedTimeBox !== undefined && selectedTimeBox !== null;
+    if(!(multiSelectionOn && timeBoxIsSelected)){
+        if(timeBoxIsSelected){
+            selectedTimeBox.removeClass(selectedTimeBoxClass);
+        }
+        selectedTimeBox = timeBox;
+        selectedTimeBox.addClass(selectedTimeBoxClass);
+    }else{
+        var startOfRange = moment.utc( selectedTimeBox.attr('data-start') );
+        var endOfRange = moment.utc( timeBox.attr('data-end') );
+        var timeBoxesInInterval = getTimeBoxesByInteval(startOfRange, endOfRange);
+        $('#life-calendar .time-box').removeClass('selected-time-box-range');
+        timeBoxesInInterval.forEach(tb => tb.addClass('selected-time-box-range'));
+    }
+
     updateNotesDiv();
     updateNewNoteForm();
 
@@ -475,4 +499,46 @@ function getNoteById(id){
     var firstNoteFound = life.Notes.find(n => n.Id === id);
     console.assert(firstNoteFound !== undefined, "Note of id " + id + " is undefined.");
     return firstNoteFound;
+}
+
+/*
+    Returns timeBoxes in the DOM of which date-data is in the interval [start, end[.
+    Pre-conditions: start and end are Moments.
+ */
+function getTimeBoxesByInteval(start, end){
+    var allTimeBoxes = $('#life-calendar .time-box');
+    console.assert(start.hour() === 0 && end.hour() === 0, "Hours not 0:", start, end);
+    console.assert(allTimeBoxes.length > 0);
+    //console.log("start and end:", start, end);
+    var timeBoxesInInterval = [];
+    allTimeBoxes.each(function(){
+        //console.log("looping");
+        var tb = $(this);
+        var tbStart = dataAttrToMoment(tb, 'data-start');
+        var tbEnd = dataAttrToMoment(tb, 'data-end');
+        //console.log("data-start:", tb.attr('data-start'));
+        //console.log(tbEnd, start, tbEnd.isAfter(start));
+        var isInInterval = tbEnd.isAfter(start) && tbStart.isBefore(end);
+        if(isInInterval){
+            timeBoxesInInterval.push(tb);
+        }
+    });
+    //console.log("getTimeBoxesByInterval: there was ", timeBoxesInInterval.length, " time boxes in interval.");
+    return timeBoxesInInterval;
+}
+
+/*
+    Pre-condition: jQuery must have a valid date string as a value of dataAttr attribute.
+ */
+function dataAttrToMoment(jQuery, dateAttr){
+    var dateString = jQuery.attr(dateAttr);
+    //console.log(jQuery)
+    console.assert(dateString !== undefined);
+    if(dateString === dataEmptyValue){
+        console.log(jQuery);
+    }
+    console.assert(dateString !== dataEmptyValue);
+    var asMoment = moment.utc(dateString);
+    console.assert(asMoment.hours() === 0, "Hours not 0:", asMoment);
+    return asMoment;
 }
