@@ -3,6 +3,7 @@ const isoDateFormatString = "YYYY-MM-DD";
 const noNoteSelectedString = "(No note selected)";
 const defaultColorHex = '#AAAAAA';
 const dataEmptyValue = '(empty)';
+const selectedTimeBoxRangeSelector = '.selected-time-box-range';
 //const momentJsDateFormatToken = "YYYY-MM-DD";
 
 const timeUnits = {

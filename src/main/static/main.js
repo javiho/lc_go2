@@ -371,16 +371,31 @@ function updateNotesDiv(){
 
 function updateNewNoteForm(){
     //console.log("updating new note form");
+    var areMultipleTBsSelected = $(selectedTimeBoxRangeSelector).length > 0;
     var timeBox = selectedTimeBox;
-    if(timeBox === null){
+    var isSingleTimeBoxSelected = timeBox === null;
+    if(!isSingleTimeBoxSelected && !areMultipleTBsSelected){
         return;
     }
-    var start = moment.utc( timeBox.attr('data-start') );
-    var end = moment.utc( timeBox.attr('data-end') );
-    start = start.format(isoDateFormatString);
-    end = end.format(isoDateFormatString);
-    $('#new-note-start').val(start);
-    $('#new-note-end').val(end);
+    if(isSingleTimeBoxSelected){
+        var start = moment.utc( timeBox.attr('data-start') );
+        var end = moment.utc( timeBox.attr('data-end') );
+        start = start.format(isoDateFormatString);
+        end = end.format(isoDateFormatString);
+        $('#new-note-start').val(start);
+        $('#new-note-end').val(end);
+    }else{
+        console.assert(areMultipleTBsSelected === true);
+        var firstTimeBox = $(selectedTimeBoxRangeSelector).first(); // TODO: toivottavasti ovat oikeassa järjestyksessä, tarkista dokumentaatiosta
+        var lastTimeBox = $(selectedTimeBoxRangeSelector).last();
+
+        var start = moment.utc( firstTimeBox.attr('data-start') );
+        var end = moment.utc( lastTimeBox.attr('data-end') );
+        start = start.format(isoDateFormatString);
+        end = end.format(isoDateFormatString);
+        $('#new-note-start').val(start);
+        $('#new-note-end').val(end);
+    }
 }
 
 function updateNoteVisibilitiesDiv() {
