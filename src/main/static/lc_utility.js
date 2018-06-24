@@ -5,6 +5,15 @@ const defaultColorHex = '#AAAAAA';
 const dataEmptyValue = '(empty)';
 const selectedTimeBoxRangeSelector = '.selected-time-box-range';
 //const momentJsDateFormatToken = "YYYY-MM-DD";
+const zoomInButtonId = 'zoom-in-button';
+const zoomOutButtonId = 'zoom-out-button';
+const restoreDefaultZoomButtonId = 'restore-default-zoom-button';
+const selectedTimeBoxClass = 'selected-time-box';
+//const zoomStep = 10; //px
+const zoomMultiplier = 1.2;
+const timeBoxDefaultWidth = 49;
+const timeBoxDefaultHeight = 49;
+const isInvalidClass = "is-invalid";
 
 const timeUnits = {
     Day: "Day",

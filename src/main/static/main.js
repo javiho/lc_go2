@@ -4,23 +4,12 @@ var resolutionUnit = "Week"; // TODO: saatava serveriltä, ehkä samalla kertaa 
 //$(initialize);
 $(document).ready(initialize);
 
-const zoomInButtonId = 'zoom-in-button';
-const zoomOutButtonId = 'zoom-out-button';
-const restoreDefaultZoomButtonId = 'restore-default-zoom-button';
-const selectedTimeBoxClass = 'selected-time-box';
-//const zoomStep = 10; //px
-const zoomMultiplier = 1.2;
-const timeBoxDefaultWidth = 49;
-const timeBoxDefaultHeight = 49;
-
-
 var life;
 var lcOptionsForm;
 
 var selectedTimeBox = null; // TODO: Jos dataa laitetaan DOMiin, niin tämänkin voisi
 var visibleNotes = []; // Stores the Note objects of which are visible in the calendar.
-
-const isInvalidClass = "is-invalid";
+var zoomLevel = 0; // Integers. Negatives are for zooming out.
 
 function initialize(){
     console.log("initializing");
@@ -148,30 +137,24 @@ function initialize(){
             //var maxWidth = $(this).css('max-width');
             //$('.time-box').css('min-width', '+=' + zoomStep).css('max-width', '+=' + zoomStep);
             //$('.time-box').css('min-height', '+=' + zoomStep).css('max-height', '+=' + zoomStep);
-            var multiplierFunction = function(index, value){
-                return parseFloat(value) * zoomMultiplier;
-            };
-            $('.time-box').css({
-                minWidth: multiplierFunction,
-                maxWidth: multiplierFunction,
-                minHeight: multiplierFunction,
-                maxHeight: multiplierFunction
-            });
+            zoomLevel += 1;
+            //var multiplierFunction = function(index, value){
+            //    return parseFloat(value) * zoomMultiplier;
+            //};
+            zoomLifeCalendar()
         }
         if(eventTargetJQuery.attr('id') === zoomOutButtonId){
-            var dividerFunction = function(index, value){
-                return parseFloat(value) * (1 / zoomMultiplier);
-            };
-            $('.time-box').css({
-                minWidth: dividerFunction,
-                maxWidth: dividerFunction,
-                minHeight: dividerFunction,
-                maxHeight: dividerFunction
-            });
+            //var dividerFunction = function(index, value){
+            //    return parseFloat(value) * (1 / zoomMultiplier);
+            //};
+            zoomLevel -= 1;
+            zoomLifeCalendar();
         }
         if(eventTargetJQuery.attr('id') === restoreDefaultZoomButtonId){
-            $('.time-box').css('min-width', timeBoxDefaultWidth).css('max-width', timeBoxDefaultWidth);
-            $('.time-box').css('min-height', timeBoxDefaultHeight).css('max-height', timeBoxDefaultHeight);
+            zoomLevel = 0;
+            zoomLifeCalendar();
+            //$('.time-box').css('min-width', timeBoxDefaultWidth).css('max-width', timeBoxDefaultWidth);
+            //$('.time-box').css('min-height', timeBoxDefaultHeight).css('max-height', timeBoxDefaultHeight);
         }
 
         if(eventTargetJQuery.is(".js-time-box")){
@@ -182,11 +165,30 @@ function initialize(){
                 timeBoxClicked(e);
             }
         }
-
-
     });
 
     $.getJSON("/get_main_page_data", glueMainPageData);
+}
+
+function getZoomedDimension(dimensionLength){
+    // If zoomLevel == 0, multiply by 1,
+    // if zoomLevel > 0, multiplier increases in increasing steps,
+    // if zoomLevel < 0, multiplier decreases in decreasing steps.
+    var newLength = Math.pow(zoomMultiplier, zoomLevel) * dimensionLength;
+    return newLength;
+}
+
+function zoomLifeCalendar(){
+    var newTimeBoxWidth = getZoomedDimension(timeBoxDefaultWidth);
+    var newTimeBoxHeight = getZoomedDimension(timeBoxDefaultHeight);
+    // TODO: näköjään hieman nopeampaa ilman funktiokutsuja, joten vosi laskea arvot etukäteen
+    // TODO: myöskin jokainen property ilmeisesti lasketaan ja piirretään erikseen?
+    $('.time-box').css({
+        minWidth: newTimeBoxWidth,
+        maxWidth: newTimeBoxWidth,
+        minHeight: newTimeBoxHeight,
+        maxHeight: newTimeBoxHeight
+    });
 }
 
 /*
@@ -205,24 +207,9 @@ function glueMainPageData(data){
     updateLifeComponents();
 }
 
-function showRequest(formData, jqForm, options) {
-    // formData is an array; here we use $.param to convert it to a string to display it
-    // but the form plugin does this for you automatically when it submits the data
-    var queryString = $.param(formData);
-
-    // jqForm is a jQuery object encapsulating the form element.  To access the
-    // DOM element for the form do this:
-    // var formElement = jqForm[0];
-
-    alert('About to submit: \n\n' + queryString);
-
-    // here we could return false to prevent the form from being submitted;
-    // returning anything other than false will allow the form submit to continue
-    return true;
-}
-
 function timeBoxClicked(e, multiSelectionOn = false){
     //console.log("time box click'd!");
+    var fsTime = performance.now();
     var timeBox = $(e.target);
 
     var timeBoxIsSelected = selectedTimeBox !== undefined && selectedTimeBox !== null;
@@ -252,6 +239,7 @@ function timeBoxClicked(e, multiSelectionOn = false){
         //console.assert(notesInTimeBox[0] !== undefined, "Undefined note.");
         populateNoteChangingForm(notesInTimeBox[0]);
     }
+    console.log("timeBoxClicked took", performance.now() - fsTime);
 }
 
 function noteRepClicked(jQuery){
@@ -324,6 +312,9 @@ function updateLifeCalendar(){
     var noteBoxElement = templateStorageDiv.children('.js-note-box');
 
     var timeBoxDOs = createTimeBoxes(); // timeBoxDataObjects
+    //var newTimeBoxElements = $([]);
+    var newTimeBoxElements = [];
+    //console.log("thissit", newTimeBoxElements);
     timeBoxDOs.forEach(function(timeBoxDO){
         var newTimeBoxElement = timeBoxElement.clone();
         newTimeBoxElement.attr("data-start", timeBoxDO.Start.format(isoDateFormatString));
@@ -343,8 +334,29 @@ function updateLifeCalendar(){
                 newNoteBoxElement.hide();
             }
         });
-        newTimeBoxElement.appendTo(lifeCalendarElement);
+        //newTimeBoxElement.appendTo(lifeCalendarElement); // TODO: Tämä vienee jonkin verran aikaa?
+        //newTimeBoxElements = newTimeBoxElements.add(newTimeBoxElement);
+        newTimeBoxElements.push(newTimeBoxElement);
+        //newTimeBoxElements = $.merge(newTimeBoxElements, [newTimeBoxElement]);
+        //console.log("add'd!");
     });
+    console.log("about to append ", newTimeBoxElements.length);
+    var fsTime = performance.now();
+    /*var firstNewTimeBoxElement = newTimeBoxElements[0];
+    newTimeBoxElements.forEach(function(ntbe){
+        firstNewTimeBoxElement = firstNewTimeBoxElement.add(ntbe);
+    });
+    //console.log("updateLifeCalendar: adding to jQuery took", performance.now() - fsTime);
+    lifeCalendarElement.append(firstNewTimeBoxElement);*/
+    //lifeCalendarElement.append(newTimeBoxElements);
+    var arrayAsJQuery = $(newTimeBoxElements).map(function(){
+        return this.toArray();
+    });
+    console.log("updateLifeCalendar: mapping took:", performance.now() - fsTime);
+    fsTime = performance.now();
+    lifeCalendarElement.append(arrayAsJQuery);
+    console.log("updateLifeCalendar: adding to DOM took", performance.now() - fsTime);
+    //newTimeBoxElements.appendTo(lifeCalendarElement);
 }
 
 function updateNotesDiv(){
@@ -447,6 +459,7 @@ function createTimeBoxes(){
     var counter = 0;
     var adjustedLifeStart = lcUtil.getFirstDateOfTimeUnit(lifeStartDate, resolutionUnit);
     for(var t = adjustedLifeStart; true; t = lcUtil.addTimeUnit(t, resolutionUnit)){
+        console.assert(counter < 1000 * 100, "This is probably because of a bug.");
         console.assert(t.hours() === 0, "Hours is not 0.");
         var tPlusResolutionUnit = lcUtil.addTimeUnit(t, resolutionUnit);
         console.assert(tPlusResolutionUnit.hours() === 0, "Hours is not 0.");
