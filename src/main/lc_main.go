@@ -127,8 +127,8 @@ func initializeData() {
 		&Note{"Nn 2", time.Date(2018, time.November, 1, 0,0,0,0,time.UTC),
 			time.Date(2018, time.November, 15, 0,0,0,0,time.UTC), "#00ff00", "hcNote2"},
 	}
-	TheLife = &Life{time.Date(2017, time.January, 1, 0, 0, 0, 0, time.UTC),
-		time.Date(2019, time.January, 1, 0, 0, 0, 0, time.UTC),
+	TheLife = &Life{time.Date(1995, time.January, 1, 0, 0, 0, 0, time.UTC),
+		time.Date(2080, time.January, 1, 0, 0, 0, 0, time.UTC),
 		notes}
 
 	//makeAllNotesVisible(TheLife)

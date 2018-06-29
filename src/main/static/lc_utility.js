@@ -34,6 +34,20 @@ var lcUtil = {};
         return longDateString.split("T")[0];
     };
 
+    /*
+        Pre-condition: shortDateString is valid ISO date string.
+        Returns milliseconds based on shortDateString.
+     */
+    context.ISODateStringToEpoch = function(shortDateString){
+        var componentStrings = shortDateString.split("-");
+        var y = Number(componentStrings[0]);
+        var m = Number(componentStrings[1]) - 1; // In js months are 0 indexed although years and days are not lol.
+        var d = Number(componentStrings[2]);
+        var date = Date.UTC(y, m, d, 0, 0, 0);
+        //console.log("ISODateStringToEpoch date: ", date);
+        return date;
+    };
+
     context.generateUniqueId = function(){
         var timePart = new Date().getTime().toString(36); // TODO: Miksi juuri 36?
         var randomPart = Math.random().toString(36).substring(2); // The two first chars are '0' and '.'.
