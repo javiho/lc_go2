@@ -8,7 +8,8 @@ var life;
 var lcOptionsForm;
 
 var stringsAndMoments = {}; // { "2018-01-01": moment.utc("2018-01-01"), etc. }
-var selectedTimeBox = null; // TODO: Jos dataa laitetaan DOMiin, niin tämänkin voisi
+//var selectedTimeBox = null; // TODO: Jos dataa laitetaan DOMiin, niin tämänkin voisi
+var selectedTimeBoxes = null; // jQuery object
 var visibleNotes = []; // Stores the Note objects of which are visible in the calendar.
 var zoomLevel = 0; // Integers. Negatives are for zooming out.
 
@@ -214,19 +215,22 @@ function timeBoxClicked(e, multiSelectionOn = false){
     var fsTime = performance.now();
     var timeBox = $(e.target);
 
-    var timeBoxIsSelected = selectedTimeBox !== undefined && selectedTimeBox !== null;
+    var timeBoxIsSelected = selectedTimeBoxes !== undefined && selectedTimeBoxes !== null;
     if(!(multiSelectionOn && timeBoxIsSelected)){
         if(timeBoxIsSelected){
-            selectedTimeBox.removeClass(selectedTimeBoxClass);
+            selectedTimeBoxes.removeClass(selectedTimeBoxRangeClass);
         }
-        selectedTimeBox = timeBox;
-        selectedTimeBox.addClass(selectedTimeBoxClass);
+        selectedTimeBoxes = timeBox;
+        selectedTimeBoxes.addClass(selectedTimeBoxRangeClass);
     }else{
-        var startOfRange = moment.utc( selectedTimeBox.attr('data-start') );
+        var startOfRange = moment.utc( selectedTimeBoxes.first().attr('data-start') );
         var endOfRange = moment.utc( timeBox.attr('data-end') );
         var timeBoxesInInterval = getTimeBoxesByInteval(startOfRange, endOfRange);
-        $('#life-calendar .time-box').removeClass('selected-time-box-range');
-        timeBoxesInInterval.forEach(tb => tb.addClass('selected-time-box-range'));
+        $('#life-calendar .time-box').removeClass(selectedTimeBoxRangeClass);
+        timeBoxesInInterval.forEach(tb => tb.addClass(selectedTimeBoxRangeClass));
+        // I can't figure out how to make a jQuery object out of array of jQuery objects in an efficient way
+        // (add function is slow), so do it by selecting from DOM based on class.
+        selectedTimeBoxes = $(selectedTimeBoxRangeSelector);
     }
 
     updateNotesDiv();
@@ -362,17 +366,20 @@ function updateLifeCalendar(){
 }
 
 function updateNotesDiv(){
-    var timeBox = selectedTimeBox;
-    if(timeBox === null){
+    var timeBoxes = selectedTimeBoxes;
+    if(timeBoxes === null){
         return;
     }
+    console.assert(timeBoxes !== undefined, "Bug.");
     var contentsOfTimeBoxDiv = $('#contents-of-time-box-div');
     contentsOfTimeBoxDiv.empty();
     var intervalSpan = $('#selected-time-box-interval-span');
-    var intervalString = selectedTimeBox.attr('data-start') + " to " + selectedTimeBox.attr('data-end');
+    var intervalStartString = selectedTimeBoxes.first().attr('data-start');
+    var intervalEndString = selectedTimeBoxes.last().attr('data-end');
+    var intervalString = intervalStartString + " to " + intervalEndString;
     intervalSpan.text(intervalString);
 
-    var notes = getNotesInTimeBoxInterval(timeBox);
+    var notes = getNotesInTimeBoxesInterval(timeBoxes);
     var noteRepElement = $('#template-storage-div .js-note-rep');
     notes.forEach(function(note){
         var newNoteRepElement = noteRepElement.clone();
@@ -385,6 +392,17 @@ function updateNotesDiv(){
 
 function updateNewNoteForm(){
     //console.log("updating new note form");
+    var selectedTimeBoxes = $(selectedTimeBoxRangeSelector);
+    var firstSelectedTB = selectedTimeBoxes.first();
+    var lastSelectedTB = selectedTimeBoxes.last();
+    var selectedRangeStartDate = moment.utc( firstSelectedTB.attr('data-start') );
+    var selectedRangeEndDate = moment.utc( lastSelectedTB.attr('data-end') );
+    var startString = selectedRangeStartDate.format(isoDateFormatString);
+    var endString = selectedRangeEndDate.format(isoDateFormatString);
+    $('#new-note-start').val(startString);
+    $('#new-note-end').val(endString);
+
+    /*
     var areMultipleTBsSelected = $(selectedTimeBoxRangeSelector).length > 0;
     var timeBox = selectedTimeBox;
     var isSingleTimeBoxSelected = timeBox === null;
@@ -409,7 +427,7 @@ function updateNewNoteForm(){
         end = end.format(isoDateFormatString);
         $('#new-note-start').val(start);
         $('#new-note-end').val(end);
-    }
+    }*/
 }
 
 function updateNoteVisibilitiesDiv() {
@@ -443,6 +461,17 @@ function updateNoteVisibilitiesDiv() {
 function getNotesInTimeBoxInterval(timeBox){
     var startDate = moment.utc(timeBox.attr("data-start"));
     var endDate = moment.utc(timeBox.attr("data-end"));
+    var notes = getNotesByInterval(startDate, endDate);
+    return notes;
+}
+
+/*
+    Pre-condition: timeBoxes has a continuous interval of time boxes in terms of their time,
+    and timeBoxes are ordered chronologically.
+ */
+function getNotesInTimeBoxesInterval(timeBoxes){
+    var startDate = moment.utc(timeBoxes.first().attr("data-start"));
+    var endDate = moment.utc(timeBoxes.last().attr("data-end"));
     var notes = getNotesByInterval(startDate, endDate);
     return notes;
 }
@@ -565,10 +594,9 @@ function getNoteById(id){
 }*/
 
 /*
-    Returns timeBoxes in the DOM of which date-data is in the interval [start, end[.
+    Returns timeBoxes in the DOM of which date-data is in the interval [start, end[. Returns an array.
     Pre-conditions: start and end are Moments. Timeboxes are sorted in increasing order in terms of time
     when selected with $('.time-box')
-    // TODO: rangen valinnass atai värjäyksessä on bugi: värjää väärät boksit!
  */
 function getTimeBoxesByInteval(start, end){
     //console.log("getTimeBoxesByInteval called");
