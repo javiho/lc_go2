@@ -119,7 +119,7 @@ function initialize(){
             // Note: Changing the value of an input element using JavaScript, using .val() for example, won't fire the event.
             var checked = eventTargetJQuery[0].checked;
             var noteId = eventTargetJQuery.parent().attr('data-note-id');
-            var note = getNoteById(noteId);
+            var note = lifeService.getNoteById(noteId, life);
             console.assert(note !== undefined, "Note of id " + noteId + " is undefined.");
             if(checked){
                 if(!visibleNotes.includes(note)){
@@ -172,17 +172,9 @@ function initialize(){
     $.getJSON("/get_main_page_data", glueMainPageData);
 }
 
-function getZoomedDimension(dimensionLength){
-    // If zoomLevel == 0, multiply by 1,
-    // if zoomLevel > 0, multiplier increases in increasing steps,
-    // if zoomLevel < 0, multiplier decreases in decreasing steps.
-    var newLength = Math.pow(zoomMultiplier, zoomLevel) * dimensionLength;
-    return newLength;
-}
-
 function zoomLifeCalendar(){
-    var newTimeBoxWidth = getZoomedDimension(timeBoxDefaultWidth);
-    var newTimeBoxHeight = getZoomedDimension(timeBoxDefaultHeight);
+    var newTimeBoxWidth = lcHelpers.getZoomedDimension(timeBoxDefaultWidth, zoomMultiplier, zoomLevel);
+    var newTimeBoxHeight = lcHelpers.getZoomedDimension(timeBoxDefaultHeight, zoomMultiplier, zoomLevel);
     // TODO: näköjään hieman nopeampaa ilman funktiokutsuja, joten vosi laskea arvot etukäteen
     // TODO: myöskin jokainen property ilmeisesti lasketaan ja piirretään erikseen?
     $('.time-box').css({
@@ -202,7 +194,7 @@ function glueMainPageData(data){
     life = data.Life;
     console.assert(life !== undefined, "Life is undefined.");
     resolutionUnit = data.ResolutionUnit;
-    datifyLifeObject();
+    lifeService.datifyLifeObject(life);
     console.log("life");
     console.log(life);
     visibleNotes = life.Notes;
@@ -236,13 +228,10 @@ function timeBoxClicked(e, multiSelectionOn = false){
     updateNotesDiv();
     updateNewNoteForm();
 
-    var notesInTimeBox = getNotesInTimeBoxInterval(timeBox);
+    var notesInTimeBox = lifeService.getNotesInTimeBoxInterval(timeBox, life);
     if(notesInTimeBox.length === 0){
         clearNoteChangingForm();
     }else{
-        //console.assert(notesInTimeBox !== undefined, "Undefined notes array.");
-        //console.log("notes in time box:", notesInTimeBox);
-        //console.assert(notesInTimeBox[0] !== undefined, "Undefined note.");
         populateNoteChangingForm(notesInTimeBox[0]);
     }
     console.log("timeBoxClicked took", performance.now() - fsTime);
@@ -254,7 +243,7 @@ function noteRepClicked(jQuery){
     console.assert(noteRep !== undefined, "noteRep undefined");
     var id = noteRep.data("note-id");
     console.log("note rep click'd of id", id);
-    var note = getNoteById(id);
+    var note = lifeService.getNoteById(id, life);
     console.assert(note !== undefined, "Note is undefined.");
     populateNoteChangingForm(note);
 }
@@ -282,20 +271,6 @@ function clearNoteChangingForm(){
     $('#note-changing-id').attr('value', "");
 }
 
-/*
-    Converts date strings in life into Moments of moment.js.
- */
-function datifyLifeObject(){
-    life.Start = moment.utc(life.Start);
-    life.End = moment.utc(life.End);
-    life.Notes.forEach(function(element, index, array){
-        array[index].Start = moment.utc(element.Start);
-        console.assert(array[index].Start.hours() === 0, "Hours not 0.");
-        array[index].End = moment.utc(element.End);
-        console.assert(array[index].End.hours() === 0, "Hours not 0.");
-    });
-}
-
 function updateLifeComponents(){
     updateLifeOptions();
     updateLifeCalendar();
@@ -317,7 +292,7 @@ function updateLifeCalendar(){
     var timeBoxElement = templateStorageDiv.children('.js-time-box');
     var noteBoxElement = templateStorageDiv.children('.js-note-box');
 
-    var timeBoxDOs = createTimeBoxes(); // timeBoxDataObjects
+    var timeBoxDOs = lifeService.createTimeBoxes(life, resolutionUnit); // timeBoxDataObjects
     //var newTimeBoxElements = $([]);
     var newTimeBoxElements = [];
     //console.log("thissit", newTimeBoxElements);
@@ -379,7 +354,7 @@ function updateNotesDiv(){
     var intervalString = intervalStartString + " to " + intervalEndString;
     intervalSpan.text(intervalString);
 
-    var notes = getNotesInTimeBoxesInterval(timeBoxes);
+    var notes = lifeService.getNotesInTimeBoxesInterval(timeBoxes, life);
     var noteRepElement = $('#template-storage-div .js-note-rep');
     notes.forEach(function(note){
         var newNoteRepElement = noteRepElement.clone();
@@ -401,33 +376,6 @@ function updateNewNoteForm(){
     var endString = selectedRangeEndDate.format(isoDateFormatString);
     $('#new-note-start').val(startString);
     $('#new-note-end').val(endString);
-
-    /*
-    var areMultipleTBsSelected = $(selectedTimeBoxRangeSelector).length > 0;
-    var timeBox = selectedTimeBox;
-    var isSingleTimeBoxSelected = timeBox === null;
-    if(!isSingleTimeBoxSelected && !areMultipleTBsSelected){
-        return;
-    }
-    if(isSingleTimeBoxSelected){
-        var start = moment.utc( timeBox.attr('data-start') );
-        var end = moment.utc( timeBox.attr('data-end') );
-        start = start.format(isoDateFormatString);
-        end = end.format(isoDateFormatString);
-        $('#new-note-start').val(start);
-        $('#new-note-end').val(end);
-    }else{
-        console.assert(areMultipleTBsSelected === true);
-        var firstTimeBox = $(selectedTimeBoxRangeSelector).first(); // TODO: toivottavasti ovat oikeassa järjestyksessä, tarkista dokumentaatiosta
-        var lastTimeBox = $(selectedTimeBoxRangeSelector).last();
-
-        var start = moment.utc( firstTimeBox.attr('data-start') );
-        var end = moment.utc( lastTimeBox.attr('data-end') );
-        start = start.format(isoDateFormatString);
-        end = end.format(isoDateFormatString);
-        $('#new-note-start').val(start);
-        $('#new-note-end').val(end);
-    }*/
 }
 
 function updateNoteVisibilitiesDiv() {
@@ -452,146 +400,6 @@ function updateNoteVisibilitiesDiv() {
         }
     });
 }
-
-
-
-/*
-    Returns array of notes or empty array.
- */
-function getNotesInTimeBoxInterval(timeBox){
-    var startDate = moment.utc(timeBox.attr("data-start"));
-    var endDate = moment.utc(timeBox.attr("data-end"));
-    var notes = getNotesByInterval(startDate, endDate);
-    return notes;
-}
-
-/*
-    Pre-condition: timeBoxes has a continuous interval of time boxes in terms of their time,
-    and timeBoxes are ordered chronologically.
- */
-function getNotesInTimeBoxesInterval(timeBoxes){
-    var startDate = moment.utc(timeBoxes.first().attr("data-start"));
-    var endDate = moment.utc(timeBoxes.last().attr("data-end"));
-    var notes = getNotesByInterval(startDate, endDate);
-    return notes;
-}
-
-function createTimeBoxes(){
-    //var lifeStartDate = moment.utc(life.Start);
-    //var lifeEndDate = moment.utc(life.End);
-    var lifeStartDate = life.Start;
-    var lifeEndDate = life.End;
-    if(lifeStartDate.isAfter(lifeEndDate) || lifeStartDate.isSame(lifeEndDate)){
-        console.log(lifeStartDate);
-        console.log(lifeEndDate);
-        console.assert(false, "Life start not before life end.");
-    }
-    var timeBoxes = [];
-    var counter = 0;
-    var adjustedLifeStart = lcUtil.getFirstDateOfTimeUnit(lifeStartDate, resolutionUnit);
-    for(var t = adjustedLifeStart; true; t = lcUtil.addTimeUnit(t, resolutionUnit)){
-        console.assert(counter < 1000 * 100, "This is probably because of a bug.");
-        console.assert(t.hours() === 0, "Hours is not 0.");
-        var tPlusResolutionUnit = lcUtil.addTimeUnit(t, resolutionUnit);
-        console.assert(tPlusResolutionUnit.hours() === 0, "Hours is not 0.");
-        var newTimeBox = createTimeBox(t, tPlusResolutionUnit, getNoteBoxesByInterval(t, tPlusResolutionUnit), counter);
-        timeBoxes.push(newTimeBox);
-        // Life end time is exclusive.
-        if(tPlusResolutionUnit.isAfter(lifeEndDate) || tPlusResolutionUnit.isSame(lifeEndDate)){
-            break;
-        }
-        counter += 1;
-    }
-    return timeBoxes;
-}
-
-function createTimeBox(startDate, endDate, noteBoxes, id){
-    return {
-        Start: startDate,
-        End: endDate,
-        NoteBoxes: noteBoxes,
-        Id: id
-    };
-}
-
-function createNoteBox(note, noteBoxId){
-    return {
-        Note: note,
-        Id: noteBoxId // Not the same thing as Note.Id
-    };
-}
-
-function getNoteBoxesByInterval(startDate, endDate){
-    var notes = getNotesByInterval(startDate, endDate);
-    console.assert(notes !== undefined);
-    var noteBoxes = createNoteBoxes(notes);
-    return noteBoxes;
-}
-
-function createNoteBoxes(notes){
-    var noteBoxes = [];
-    notes.forEach(function(note){
-        var noteBox = createNoteBox(note, lcUtil.generateUniqueId());
-        noteBoxes.push(noteBox);
-    });
-    return noteBoxes;
-}
-
-function getNotesByInterval(start, end){
-    /*
-    Pre-condition start < end (ENTÄ JOS ON SAMA?). life.start < life.end
-     */
-    /*
-    käy läpi kaikki notet lifessä
-        jos ne > is ja ns < ie
-     */
-    var notesInInterval = [];
-    life.Notes.forEach(function(note){
-        if(note.End.isAfter(start) && note.Start.isBefore(end)){
-            notesInInterval.push(note);
-        }
-    });
-    return notesInInterval;
-}
-
-function getNoteById(id){
-    var firstNoteFound = life.Notes.find(n => n.Id === id);
-    console.assert(firstNoteFound !== undefined, "Note of id " + id + " is undefined.");
-    return firstNoteFound;
-}
-
-/*
-    Returns timeBoxes in the DOM of which date-data is in the interval [start, end[.
-    Pre-conditions: start and end are Moments.
-    // TODO: rangen valinnass atai värjäyksessä on bugi: värjää väärät boksit!
- */
-/*function getTimeBoxesByInteval2(start, end){
-    console.log("getTimeBoxesByInteval called");
-    var allTimeBoxes = $('#life-calendar .time-box');
-    console.assert(start.hour() === 0 && end.hour() === 0, "Hours not 0:", start, end);
-    console.assert(allTimeBoxes.length > 0);
-    //console.log("start and end:", start, end);
-    var startMs = start.valueOf();
-    var endMs = end.valueOf();
-    var timeBoxesInInterval = [];
-    allTimeBoxes.each(function(){
-        //console.log("looping");
-        var tb = $(this);
-        // TODO: momenttien muodostamiseen kuluu aikaa, jos niitä tehdään paljon
-        //var tbStart = dataAttrToMoment(tb, 'data-start');
-        //var tbEnd = dataAttrToMoment(tb, 'data-end');
-        var tbStartMs = dataAttrToEpoch(tb, 'data-start');
-        var tbEndMs = dataAttrToEpoch(tb, 'data-end');
-        //console.log("data-start:", tb.attr('data-start'));
-        //console.log(tbEnd, start, tbEnd.isAfter(start));
-        var isInInterval = tbEndMs > startMs && tbStartMs < endMs;
-        if(isInInterval){
-            timeBoxesInInterval.push(tb);
-        }
-    });
-    //console.log("getTimeBoxesByInterval: there was ", timeBoxesInInterval.length, " time boxes in interval.");
-    return timeBoxesInInterval;
-}*/
 
 /*
     Returns timeBoxes in the DOM of which date-data is in the interval [start, end[. Returns an array.
@@ -621,8 +429,8 @@ function getTimeBoxesByInteval(start, end){
         // TODO: momenttien muodostamiseen kuluu aikaa, jos niitä tehdään paljon
         //var tbStart = dataAttrToMoment(tb, 'data-start');
         //var tbEnd = dataAttrToMoment(tb, 'data-end');
-        var tbStartMs = dataAttrToEpoch(tb, 'data-start');
-        var tbEndMs = dataAttrToEpoch(tb, 'data-end');
+        var tbStartMs = lcHelpers.dataAttrToEpoch(tb, 'data-start');
+        var tbEndMs = lcHelpers.dataAttrToEpoch(tb, 'data-end');
         //console.log("Time box: -----")
         //console.log("data-start:", tb.attr('data-start'));
         //console.log("data-end:", tb.attr('data-end'));
@@ -653,36 +461,6 @@ function getTimeBoxesByInteval(start, end){
     console.log("getTimeBoxesByInteval: cycled thorugh", counter, "elements. Total elements:", allTimeBoxes.length);
     //console.log("getTimeBoxesByInterval: there was ", timeBoxesInInterval.length, " time boxes in interval.");
     return timeBoxesInInterval;
-}
-
-/*
-    Pre-condition: jQuery must have a valid date string as a value of dataAttr attribute.
- */
-function dataAttrToMoment(jQuery, dateAttr){
-    var dateString = jQuery.attr(dateAttr);
-    //console.log(jQuery)
-    console.assert(dateString !== undefined);
-    if(dateString === dataEmptyValue){
-        console.log(jQuery);
-    }
-    console.assert(dateString !== dataEmptyValue);
-    var asMoment = moment.utc(dateString);
-    console.assert(asMoment.hours() === 0, "Hours not 0:", asMoment);
-    return asMoment;
-}
-
-function dataAttrToEpoch(jQuery, dateAttr){
-    var dateString = jQuery.attr(dateAttr);
-    //console.log(jQuery)
-    console.assert(dateString !== undefined);
-    if(dateString === dataEmptyValue){
-        console.log(jQuery);
-        console.assert(false, "dataEmptyValue in data attribute.");
-    }
-    console.assert(dateString !== dataEmptyValue);
-    var asEpoch = lcUtil.ISODateStringToEpoch(dateString);
-    //console.assert(asMoment.hours() === 0, "Hours not 0:", asMoment);
-    return asEpoch;
 }
 
 /*
