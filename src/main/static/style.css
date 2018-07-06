@@ -48,6 +48,14 @@
     overflow-y: scroll;
 }
 
+.past-colored{
+    background-color: #373737;
+}
+
+.future-colored{
+    background-color: #ffffff;
+}
+
 footer{
     min-height: 15px;
 }

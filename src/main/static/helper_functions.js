@@ -15,7 +15,7 @@ var lcHelpers = {};
     context.dataAttrToEpoch = function(jQuery, dateAttr){
         var dateString = jQuery.attr(dateAttr);
         //console.log(jQuery)
-        console.assert(dateString !== undefined);
+        console.assert(dateString !== undefined, dateAttr, "of", jQuery, "was not found.");
         if(dateString === dataEmptyValue){
             console.log(jQuery);
             console.assert(false, "dataEmptyValue in data attribute.");

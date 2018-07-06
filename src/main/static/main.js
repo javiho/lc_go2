@@ -172,6 +172,41 @@ function initialize(){
     $.getJSON("/get_main_page_data", glueMainPageData);
 }
 
+/*
+    TODO: performanssi
+    TODO: toimiiko?
+    TODO: ensimmäinen luuppi riittänee jos laittaa värityksen ja sen logiikan sinne. Tosin päivämäärät voidaan haluta varastoida myöhempää käyttöä varten.
+ */
+function updatePastFutureColoring(){
+    var now = (new Date()).getTime();
+    var timeBoxStartTimes = {};
+    var timeBoxEndTimes = {};
+    $('#life-calendar .time-box').each(function(){
+        let tb = $(this);
+        var startMs = lcHelpers.dataAttrToEpoch(tb, 'data-start');
+        var startMsString = startMs.toString();
+        var endMs = lcHelpers.dataAttrToEpoch(tb, 'data-end');
+        var endMsString = endMs.toString();
+        timeBoxStartTimes[startMsString] = tb;
+        timeBoxEndTimes[endMsString] = tb;
+    });
+    console.log("updatePastDuruterColoring: total boxes:", Object.getOwnPropertyNames(timeBoxStartTimes).length);
+    for(var key in timeBoxEndTimes){
+        if(timeBoxStartTimes.hasOwnProperty(key)){
+            let tb = timeBoxEndTimes[key];
+            if( Number(key) > now ){
+                tb.addClass('future-colored');
+                tb.removeClass('past-colored');
+            }else if(Number(key) < now ){
+                tb.addClass('past-colored');
+                tb.removeClass('future-colored');
+            }else{
+                console.log("ITS THETSFA DSAMMSMFE!!!");
+            }
+        }
+    }
+}
+
 function zoomLifeCalendar(){
     var newTimeBoxWidth = lcHelpers.getZoomedDimension(timeBoxDefaultWidth, zoomMultiplier, zoomLevel);
     var newTimeBoxHeight = lcHelpers.getZoomedDimension(timeBoxDefaultHeight, zoomMultiplier, zoomLevel);
@@ -217,7 +252,7 @@ function timeBoxClicked(e, multiSelectionOn = false){
     }else{
         var startOfRange = moment.utc( selectedTimeBoxes.first().attr('data-start') );
         var endOfRange = moment.utc( timeBox.attr('data-end') );
-        var timeBoxesInInterval = getTimeBoxesByInteval(startOfRange, endOfRange);
+        var timeBoxesInInterval = getTimeBoxesByInterval(startOfRange, endOfRange);
         $('#life-calendar .time-box').removeClass(selectedTimeBoxRangeClass);
         timeBoxesInInterval.forEach(tb => tb.addClass(selectedTimeBoxRangeClass));
         // I can't figure out how to make a jQuery object out of array of jQuery objects in an efficient way
@@ -276,6 +311,7 @@ function updateLifeComponents(){
     updateLifeCalendar();
     updateNotesDiv();
     updateNoteVisibilitiesDiv();
+    updatePastFutureColoring();
 }
 
 function updateLifeOptions(){
@@ -405,8 +441,10 @@ function updateNoteVisibilitiesDiv() {
     Returns timeBoxes in the DOM of which date-data is in the interval [start, end[. Returns an array.
     Pre-conditions: start and end are Moments. Timeboxes are sorted in increasing order in terms of time
     when selected with $('.time-box')
+
+    TODO: Entä jos intervalli on pienempi kuin time boxin aikaväli?
  */
-function getTimeBoxesByInteval(start, end){
+function getTimeBoxesByInterval(start, end){
     //console.log("getTimeBoxesByInteval called");
     //console.log("start:", start, "end:", end);
     var allTimeBoxes = $('#life-calendar .time-box');
@@ -458,7 +496,7 @@ function getTimeBoxesByInteval(start, end){
             console.assert(false, "Bug.");
         }
     });
-    console.log("getTimeBoxesByInteval: cycled thorugh", counter, "elements. Total elements:", allTimeBoxes.length);
+    console.log("getTimeBoxesByInterval: cycled thorugh", counter, "elements. Total elements:", allTimeBoxes.length);
     //console.log("getTimeBoxesByInterval: there was ", timeBoxesInInterval.length, " time boxes in interval.");
     return timeBoxesInInterval;
 }
