@@ -25,6 +25,8 @@ const timeUnits = {
 const MAX_DATE = moment.utc("2200-01-01");
 const MIN_DATE = moment.utc("1910-01-01");
 
+const RGB_COMPNENT_POSSIBLE_VALUES_COUNT = 256;
+
 var lcUtil = {};
 (function(context){
 

@@ -179,7 +179,101 @@ function initialize(){
  */
 function updatePastFutureColoring(){
     var now = (new Date()).getTime();
-    var timeBoxStartTimes = {};
+
+    var tbByStartEndTimesResult = getTimeBoxesByStartAndEnd();
+    var timeBoxEndTimes = tbByStartEndTimesResult.endTimes;
+    var lifeEndMs = life.End.valueOf();
+    var lifeStartMs = life.Start.valueOf();
+    var uncertaintyStart = computeLifetimeUncertaintyStart(lifeStartMs, lifeEndMs);
+
+    //console.log("updatePastDuruterColoring: total boxes:", Object.getOwnPropertyNames(timeBoxStartTimes).length);
+    //console.log("own property names:", Object.getOwnPropertyNames(timeBoxStartTimes));
+    var previousKeyAsNumber = 0;
+    //console.log("Keys:");
+    //console.log(timeBoxEndTimes.keys());
+    for(var key of timeBoxEndTimes.keys()){
+        var keyAsNumber = Number(key);
+        console.assert(previousKeyAsNumber < keyAsNumber, "Keys are not in ascending order.");
+        let tb = timeBoxEndTimes.get(key);
+        if( keyAsNumber > now ){
+            tb.removeClass('past-colored');
+            var uncertaintyValue = uncertaintyFunction(lifeEndMs, uncertaintyStart, keyAsNumber);
+            if(uncertaintyValue > 0){
+                var uncertaintySpecificShadeOfGrey = Math.ceil( (1 - uncertaintyValue) * RGB_COMPNENT_POSSIBLE_VALUES_COUNT);
+                //console.log("uncertaintySpecificShadeOfGrey:", uncertaintySpecificShadeOfGrey );
+                //tb.css({backgroundColor: "blue"});
+                tb.css({backgroundColor: `rgb(${uncertaintySpecificShadeOfGrey}, ${uncertaintySpecificShadeOfGrey}, ${uncertaintySpecificShadeOfGrey})`});
+                //tb.css({backgroundColor: "rgb(100, 100, 100)"});
+                //console.log("shold apply uncerainty color");
+            }else{
+                //console.log("should not apply uncertainty color");
+                tb.addClass('future-colored');
+            }
+        }else if(keyAsNumber < now ){
+            tb.addClass('past-colored');
+            tb.removeClass('future-colored');
+        }else{
+            console.log("ITS THETSFA DSAMMSMFE!!!");
+        }
+        previousKeyAsNumber = keyAsNumber;
+    }
+    /*
+    for(var key in timeBoxEndTimes){
+        if(timeBoxEndTimes.hasOwnProperty(key)){
+            var keyAsNumber = Number(key);
+            console.assert(previousKeyAsNumber < keyAsNumber, "Keys are not in ascending order.");
+            let tb = timeBoxEndTimes[key];
+            if( keyAsNumber > now ){
+                tb.removeClass('past-colored');
+                var uncertaintyValue = uncertaintyFunction(lifeEndMs, uncertaintyStart, keyAsNumber);
+                if(uncertaintyValue > 0){
+                    var uncertaintySpecificShadeOfGrey = Math.ceil( (1 - uncertaintyValue) * RGB_COMPNENT_POSSIBLE_VALUES_COUNT);
+                    //console.log("uncertaintySpecificShadeOfGrey:", uncertaintySpecificShadeOfGrey );
+                    //tb.css({backgroundColor: "blue"});
+                    tb.css({backgroundColor: `rgb(${uncertaintySpecificShadeOfGrey}, ${uncertaintySpecificShadeOfGrey}, ${uncertaintySpecificShadeOfGrey})`});
+                    //tb.css({backgroundColor: "rgb(100, 100, 100)"});
+                    //console.log("shold apply uncerainty color");
+                }else{
+                    //console.log("should not apply uncertainty color");
+                    tb.addClass('future-colored');
+                }
+            }else if(keyAsNumber < now ){
+                tb.addClass('past-colored');
+                tb.removeClass('future-colored');
+            }else{
+                console.log("ITS THETSFA DSAMMSMFE!!!");
+            }
+            previousKeyAsNumber = keyAsNumber;
+        }
+    }
+    */
+}
+
+function computeLifetimeUncertaintyStart(lifeStartMs, lifeEndMs){
+    console.assert(lifeStartMs !== undefined);
+    console.assert(lifeEndMs !== undefined);
+    return ((lifeEndMs - lifeStartMs) / 2) + lifeStartMs;
+}
+
+/*
+    Returns Maps where keys are millisecond timestamps as strings and values are time boxes,
+    and keys are ordered chronologically. Returns the Maps like this: {"startTimes": startTimesMap, "endTimes": endTimesMap}
+    TODO: Kai niiden ny tarvii olla stringejä jos käyteään mappia, mut katotaan.
+ */
+function getTimeBoxesByStartAndEnd(){
+    var timeBoxStartTimes = new Map();
+    var timeBoxEndTimes = new Map();
+    $('#life-calendar .time-box').each(function(){
+        let tb = $(this);
+        var startMs = lcHelpers.dataAttrToEpoch(tb, 'data-start');
+        var startMsString = startMs.toString();
+        var endMs = lcHelpers.dataAttrToEpoch(tb, 'data-end');
+        var endMsString = endMs.toString();
+        timeBoxStartTimes.set(startMsString, tb);
+        timeBoxEndTimes.set(endMsString, tb);
+    });
+    return {"startTimes": timeBoxStartTimes, "endTimes": timeBoxEndTimes};
+    /*var timeBoxStartTimes = {};
     var timeBoxEndTimes = {};
     $('#life-calendar .time-box').each(function(){
         let tb = $(this);
@@ -190,22 +284,26 @@ function updatePastFutureColoring(){
         timeBoxStartTimes[startMsString] = tb;
         timeBoxEndTimes[endMsString] = tb;
     });
-    console.log("updatePastDuruterColoring: total boxes:", Object.getOwnPropertyNames(timeBoxStartTimes).length);
-    for(var key in timeBoxEndTimes){
-        if(timeBoxStartTimes.hasOwnProperty(key)){
-            let tb = timeBoxEndTimes[key];
-            if( Number(key) > now ){
-                tb.addClass('future-colored');
-                tb.removeClass('past-colored');
-            }else if(Number(key) < now ){
-                tb.addClass('past-colored');
-                tb.removeClass('future-colored');
-            }else{
-                console.log("ITS THETSFA DSAMMSMFE!!!");
-            }
-        }
-    }
+    return {"startTimes": timeBoxStartTimes, "endTimes": timeBoxEndTimes};*/
 }
+
+/*
+    Pre-condition: all parameters are Numbers. uncertaintyStart <= intervalEnd
+    TODO: mitä jos samat?
+    TODO: parempi nimi
+    Returns a number in interval [0, 1].
+ */
+function uncertaintyFunction(intervalEnd, uncertaintyStart, point){
+    console.assert(uncertaintyStart <= intervalEnd);
+    if(uncertaintyStart === intervalEnd){
+        console.log("uncertaintyFunction: gonna return 1");
+        return 1;
+    }
+    var normalizedIntervalEnd = intervalEnd - uncertaintyStart;
+    var normalizedPoint = point - uncertaintyStart;
+    var percentage = normalizedPoint / normalizedIntervalEnd;
+    return percentage;
+};
 
 function zoomLifeCalendar(){
     var newTimeBoxWidth = lcHelpers.getZoomedDimension(timeBoxDefaultWidth, zoomMultiplier, zoomLevel);
