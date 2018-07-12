@@ -2,6 +2,30 @@
 var lifeService = {};
 (function(context){
 
+    context.computeLifetimeUncertaintyStart = function(lifeStartMs, lifeEndMs){
+        console.assert(lifeStartMs !== undefined);
+        console.assert(lifeEndMs !== undefined);
+        return ((lifeEndMs - lifeStartMs) / 2) + lifeStartMs;
+    }
+
+    /*
+    Pre-condition: all parameters are Numbers. uncertaintyStart <= intervalEnd
+    TODO: mitä jos samat?
+    TODO: parempi nimi
+    Returns a number in interval [0, 1].
+    */
+    context.uncertaintyFunction = function(intervalEnd, uncertaintyStart, point){
+        console.assert(uncertaintyStart <= intervalEnd);
+        if(uncertaintyStart === intervalEnd){
+            console.log("uncertaintyFunction: gonna return 1");
+            return 1;
+        }
+        var normalizedIntervalEnd = intervalEnd - uncertaintyStart;
+        var normalizedPoint = point - uncertaintyStart;
+        var percentage = normalizedPoint / normalizedIntervalEnd;
+        return percentage;
+    };
+
     context.getNoteById = function(id, life){
         var firstNoteFound = life.Notes.find(n => n.Id === id);
         console.assert(firstNoteFound !== undefined, "Note of id " + id + " is undefined.");
