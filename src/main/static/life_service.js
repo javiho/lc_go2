@@ -5,7 +5,10 @@ var lifeService = {};
     context.computeLifetimeUncertaintyStart = function(lifeStartMs, lifeEndMs){
         console.assert(lifeStartMs !== undefined);
         console.assert(lifeEndMs !== undefined);
-        return ((lifeEndMs - lifeStartMs) / 2) + lifeStartMs;
+        //var lifeDuration = lifeEndMs - lifeStartMs;
+        var now = new Date().getTime();
+        var remainingLifeDuration = lifeEndMs - now;
+        return (remainingLifeDuration / 2) + now;
     }
 
     /*
