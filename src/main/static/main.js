@@ -11,7 +11,7 @@ var stringsAndMoments = {}; // { "2018-01-01": moment.utc("2018-01-01"), etc. }
 //var selectedTimeBox = null; // TODO: Jos dataa laitetaan DOMiin, niin tämänkin voisi
 var selectedTimeBoxes = null; // jQuery object
 var visibleNotes = []; // Stores the Note objects of which are visible in the calendar.
-var zoomLevel = 0; // Integers. Negatives are for zooming out.
+var zoomLevel = -8; // Integers. Negatives are for zooming out.
 
 function initialize(){
     console.log("initializing");
@@ -267,6 +267,7 @@ function glueMainPageData(data){
     visibleNotes = life.Notes;
     //createMomentsFromDataAttrs(); // Done here in the beginning so only need to create Moments once (performance problems).
     updateLifeComponents();
+    zoomLifeCalendar();
 }
 
 function timeBoxClicked(e, multiSelectionOn = false){
