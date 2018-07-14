@@ -11,30 +11,33 @@
 <div class="container-fluid">
 
 <div class="row">
-    <div class="col-8">
-        <form id="lc-options-form" class="form-inline needs-validation" data-action="/change_options" data-method="put" novalidate>
-            <label for="resolution-unit-select">Select time unit:</label>
-            <select id="resolution-unit-select" class="form-control" name="resolution-unit" form="lc-options-form"
-                    data-default-selected="{{.ResolutionUnit}}">
-            {{range .AllResolutionUnits}}
-                <option value="{{.}}">{{.}}</option>
-            {{end}}
-            </select>
-            <label for="life-start-input">Birth date:</label>
-            <input id="life-start-input" class="form-control" name="life-start" type="date" value="(empty)" required>
-            <span class="invalid-feedback">Can't handle this date, my dude...</span>
-            <label for="life-end-input">Estimated death date:</label>
-            <input id="life-end-input" class="form-control" name="life-end" type="date" value="(empty)" required>
-            <span class="invalid-feedback">Can't handle this date, my dude...</span>
-            <input type="submit" class="button" value="Save">
-        </form>
-    </div>
-    <div class="col-2">
-        <button id="zoom-in-button" class="btn" type="button"><img class="small-icon" src="/static/open-iconic/svg/zoom-in.svg" alt="zoom in icon"></button>
-        <button id="zoom-out-button" class="btn" type="button"><img class="small-icon" src="/static/open-iconic/svg/zoom-out.svg" alt="zoom out icon"></button>
-        <button id="restore-default-zoom-button" class="btn" type="button" title="Restore default zoom">
-            <img class="small-icon" src="/static/open-iconic/svg/magnifying-glass.svg" alt="default zoom icon">
-        </button>
+    <div class="col-10">
+        <div class="d-flex flex-wrap justify-content-between">
+            <form id="lc-options-form" class="form-inline needs-validation" data-action="/change_options" data-method="put" novalidate>
+                <label for="resolution-unit-select">Select time unit:</label>
+                <select id="resolution-unit-select" class="form-control" name="resolution-unit" form="lc-options-form"
+                        data-default-selected="{{.ResolutionUnit}}">
+                {{range .AllResolutionUnits}}
+                    <option value="{{.}}">{{.}}</option>
+                {{end}}
+                </select>
+                <label for="life-start-input">Birth date:</label>
+                <input id="life-start-input" class="form-control" name="life-start" type="date" value="(empty)" required>
+                <span class="invalid-feedback">Can't handle this date, my dude...</span>
+                <label for="life-end-input">Estimated death date:</label>
+                <input id="life-end-input" class="form-control" name="life-end" type="date" value="(empty)" required>
+                <span class="invalid-feedback">Can't handle this date, my dude...</span>
+                <input type="submit" class="button" value="Save">
+            </form>
+            <div id="calendar-controls-div">
+                <!--<button id="show-time-coloring-button" class="btn" type="button">Time coloring</button>-->
+                <button id="zoom-in-button" class="btn" type="button"><img class="small-icon" src="/static/open-iconic/svg/zoom-in.svg" alt="zoom in icon"></button>
+                <button id="zoom-out-button" class="btn" type="button"><img class="small-icon" src="/static/open-iconic/svg/zoom-out.svg" alt="zoom out icon"></button>
+                <button id="restore-default-zoom-button" class="btn" type="button" title="Restore default zoom">
+                    <img class="small-icon" src="/static/open-iconic/svg/magnifying-glass.svg" alt="default zoom icon">
+                </button>
+            </div>
+        </div>
     </div>
     <div class="col-2">
         <button class="btn" type="button" data-toggle="collapse" data-target="#notes-control-panel">Show side bar</button>
