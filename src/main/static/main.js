@@ -11,7 +11,7 @@ var stringsAndMoments = {}; // { "2018-01-01": moment.utc("2018-01-01"), etc. }
 //var selectedTimeBox = null; // TODO: Jos dataa laitetaan DOMiin, niin tämänkin voisi
 var selectedTimeBoxes = null; // jQuery object
 var visibleNotes = []; // Stores the Note objects of which are visible in the calendar.
-var zoomLevel = -8; // Integers. Negatives are for zooming out.
+var zoomLevel = defaultZoomLevel; // Integers. Negatives are for zooming out.
 
 function initialize(){
     console.log("initializing");
@@ -153,7 +153,7 @@ function initialize(){
             zoomLifeCalendar();
         }
         if(eventTargetJQuery.attr('id') === restoreDefaultZoomButtonId){
-            zoomLevel = 0;
+            zoomLevel = defaultZoomLevel;
             zoomLifeCalendar();
             //$('.time-box').css('min-width', timeBoxDefaultWidth).css('max-width', timeBoxDefaultWidth);
             //$('.time-box').css('min-height', timeBoxDefaultHeight).css('max-height', timeBoxDefaultHeight);

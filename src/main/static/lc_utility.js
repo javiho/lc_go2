@@ -12,6 +12,7 @@ const restoreDefaultZoomButtonId = 'restore-default-zoom-button';
 const selectedTimeBoxClass = 'selected-time-box';
 //const zoomStep = 10; //px
 const zoomMultiplier = 1.2;
+const defaultZoomLevel = -8;
 const timeBoxDefaultWidth = 49;
 const timeBoxDefaultHeight = 49;
 const isInvalidClass = "is-invalid";
