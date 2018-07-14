@@ -344,7 +344,6 @@ function updateLifeComponents(){
     updateLifeCalendar();
     updateNotesDiv();
     updateNoteVisibilitiesDiv();
-    updatePastFutureColoring();
 }
 
 function updateLifeOptions(){
@@ -407,6 +406,7 @@ function updateLifeCalendar(){
     lifeCalendarElement.append(arrayAsJQuery);
     console.log("updateLifeCalendar: adding to DOM took", performance.now() - fsTime);
     //newTimeBoxElements.appendTo(lifeCalendarElement);
+    updatePastFutureColoring();
 }
 
 function updateNotesDiv(){
@@ -418,10 +418,28 @@ function updateNotesDiv(){
     var contentsOfTimeBoxDiv = $('#contents-of-time-box-div');
     contentsOfTimeBoxDiv.empty();
     var intervalSpan = $('#selected-time-box-interval-span');
-    var intervalStartString = selectedTimeBoxes.first().attr('data-start');
-    var intervalEndString = selectedTimeBoxes.last().attr('data-end');
+    var startDataAttribute = selectedTimeBoxes.first().attr('data-start');
+    var endDataAttribute = selectedTimeBoxes.last().attr('data-end');
+
+    var intervalStartString = startDataAttribute;
+    var intervalEndString = endDataAttribute;
     var intervalString = intervalStartString + " to " + intervalEndString;
     intervalSpan.text(intervalString);
+
+    var intervalAgeSpan = $('#selected-time-box-interval-age-span');
+    var intervalStartMoment = moment.utc(startDataAttribute);
+    var intervalEndMoment = moment.utc(endDataAttribute);
+    var intervalStartAgeComponents = getAgeAsDateComponents(life.Start, intervalStartMoment);
+    var intervalEndAgeComponents = getAgeAsDateComponents(life.Start, intervalEndMoment);
+    //console.log("life start:", life.Start, "intervalStartMoment:", intervalStartMoment, "diff:", intervalStartMoment.diff(life.Start));
+    //console.log("life start:", life.Start, "intervalEndMoment:", intervalEndMoment, "diff:", intervalEndMoment.diff(life.Start));
+    //var intervalStartAge = moment.duration( intervalStartMoment.diff(life.Start) );
+    //var intervalEndAge = moment.duration( intervalEndMoment.diff(life.Start) );
+    //var intervalAgeText = intervalStartAge.as("days") + " to " + intervalEndAge.as("days");
+    var intervalAgeText = `${intervalStartAgeComponents.years}y ${intervalStartAgeComponents.months}m to ` +
+            `${intervalEndAgeComponents.years}y ${intervalEndAgeComponents.months}m`;
+    intervalAgeSpan.text(intervalAgeText);
+
 
     var notes = lifeService.getNotesInTimeBoxesInterval(timeBoxes, life);
     var noteRepElement = $('#template-storage-div .js-note-rep');
@@ -432,6 +450,19 @@ function updateNotesDiv(){
         newNoteRepElement.css('background-color', note.Color);
         contentsOfTimeBoxDiv.append(newNoteRepElement);
     });
+}
+
+/*
+    Pre-condition: birth and currentMoment are Moments.
+    Returns age with years, and extra months, and extra days. Returns a following kind of object:
+    {years: Number, months: Number, days: Number}. Eg. when birth is 1.1.2000 and current moment is 1.1.2001,
+    years is 1 and others are 0.
+ */
+function getAgeAsDateComponents(birth, currentMoment){
+    var years = currentMoment.year() - birth.year();
+    var months = currentMoment.month() - birth.month();
+    var days = currentMoment.days() - birth.days();
+    return {years: years, months: months, days: days};
 }
 
 function updateNewNoteForm(){
