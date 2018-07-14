@@ -67,15 +67,15 @@
                 <form id="note-changing-form" data-action="/change_note" data-method="post">
                     <div class="form-group">
                         <label for="note-changing-text-input">Note text</label>
-                        <input id="note-changing-text-input" type="text" class="form-control" name="text" value="(No note selected)">
+                        <input id="note-changing-text-input" type="text" class="form-control form-control-sm" name="text" value="(No note selected)">
                     </div>
                     <div class="form-group">
                         <label for="note-changing-start-input">Start date</label>
-                        <input id="note-changing-start-input" type="date" class="form-control" name="start-date" value="(No note selected)">
+                        <input id="note-changing-start-input" type="date" class="form-control form-control-sm" name="start-date" value="(No note selected)">
                     </div>
                     <div class="form-group">
                         <label for="note-changing-end-input">End date</label>
-                        <input id="note-changing-end-input" type="date" class="form-control" name="end-date" value="(No note selected)">
+                        <input id="note-changing-end-input" type="date" class="form-control form-control-sm" name="end-date" value="(No note selected)">
                     </div>
                     <div class="form-group">
                         <label for="note-changing-color-input">Color</label>
@@ -96,19 +96,19 @@
                 <form id="new-note-form" data-action="/add_note" data-method="post">
                     <div class="form-group">
                         <label for="new-note-text">Text</label>
-                        <input class="form-control" type="text" id="new-note-text" name="note-text" placeholder="Note text">
+                        <input class="form-control form-control-sm" type="text" id="new-note-text" name="note-text" placeholder="Note text">
                     </div>
                     <div class="form-group">
                         <label for="new-note-color">Color</label>
-                        <input class="form-control" type="color" id="new-note-color" name="note-color" value="#AAAAAA">
+                        <input type="color" id="new-note-color" name="note-color" value="#AAAAAA">
                     </div>
                     <div class="form-group">
                         <label for="new-note-start">Start</label>
-                        <input class="form-control" type="date" id="new-note-start" name="note-start" value="(None selected)">
+                        <input class="form-control form-control-sm" type="date" id="new-note-start" name="note-start" value="(None selected)">
                     </div>
                     <div class="form-group">
                         <label for="new-note-end">End</label>
-                        <input class="form-control" type="date" id="new-note-end" name="note-end" value="(None selected)">
+                        <input class="form-control form-control-sm" type="date" id="new-note-end" name="note-end" value="(None selected)">
                     </div>
                     <input type="submit" value="Create">
                 </form>
