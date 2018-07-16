@@ -6,6 +6,21 @@ import (
 	"strconv"
 )
 
+/**
+
+CREATE TABLE note(id TEXT, text TEXT, start TEXT, end TEXT, color TEXT, life_id INTEGER, FOREIGN KEY(life_id) REFERENCES life(id))
+
+CREATE TABLE life(id INTEGER, start TEXT, end TEXT)
+
+CREATE TABLE life_options(id, life_id INTEGER, life_id FOREIGN KEY(life_id) REFERENCES life(id))
+
+INSERT INTO life VALUES (1, "1995-01-01 00:00:00.000", "2080-01-01 00:00:00.000")
+
+INSERT INTO note VALUES ("hcNote1", "Nn 1", "2017-02-15 00:00:00.000", "2017-04-01 00:00:00.000", "#0000ff", 1)
+INSERT INTO note VALUES ("hcNote2", "Nn 2", "2018-11-01 00:00:00.000", "2018-11-15 00:00:00.000", "#00ff00", 1)
+
+ */
+
 type Note struct{
 	Text string
 	Start time.Time
@@ -29,6 +44,7 @@ const(
 )
 
 const yyMMddLayout = "2006-01-02"
+const dbDateLayout = "2006-01-02 15:04:05.000"
 
 type Life struct{
 	Start time.Time
