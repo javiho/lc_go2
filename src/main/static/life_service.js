@@ -29,6 +29,19 @@ var lifeService = {};
         return percentage;
     };
 
+    /*
+        Returns true iff note exists in life and is not undefined.
+     */
+    context.doesNoteExist = function(id, life){
+        console.assert(id !== undefined && life !== undefined, "Erroneous parameters");
+        var firstNoteFound = life.Notes.find(n => n.Id === id);
+        var found = firstNoteFound !== undefined;
+        if(!found){
+            console.log("doesNoteExist: Note of id", id, "was not found.");
+        }
+        return found;
+    };
+
     context.getNoteById = function(id, life){
         var firstNoteFound = life.Notes.find(n => n.Id === id);
         console.assert(firstNoteFound !== undefined, "Note of id " + id + " is undefined.");

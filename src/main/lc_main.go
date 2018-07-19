@@ -90,6 +90,7 @@ func main() {
 	router.HandleFunc("/get_life", GetLife).Methods("GET")
 	router.HandleFunc("/change_note", ChangeNote).Methods("POST")
 	router.HandleFunc("/add_note", AddNote).Methods("POST")
+	router.HandleFunc("/delete_note", DeleteNote).Methods("POST")
 	router.HandleFunc("/change_options", ChangeLcOptions).Methods("PUT")
 	router.HandleFunc("/people", GetPeople).Methods("GET")
 	router.HandleFunc("/people/{id}", GetPerson).Methods("GET")
@@ -362,6 +363,25 @@ func AddNote(w http.ResponseWriter, r *http.Request){
 	note := Note{noteText, startDate, endDate, colorHexString, betterguid.New()}
 	TheLife.addNote(&note)
 	fmt.Println("note added with id: ", note.Id)
+	json.NewEncoder(w).Encode(getLcMainPageVariables())
+}
+
+func DeleteNote(w http.ResponseWriter, r *http.Request){
+	fmt.Println("DeleteNote called")
+	r.ParseForm()
+	fmt.Println(r.Form)
+	noteId := r.Form["id"][0]
+	var note *Note
+	if TheLife.doesNoteExist(noteId){
+		note = TheLife.getNoteById(noteId)
+	}else{
+		log.Println("note id of ", noteId, "doesn't exist")
+		http.Error(w, "No valid note selected.", 500)
+		return
+	}
+	fmt.Println("Trying to delete note")
+	TheLife.deleteNote(note)
+	fmt.Println("note deletion done")
 	json.NewEncoder(w).Encode(getLcMainPageVariables())
 }
 

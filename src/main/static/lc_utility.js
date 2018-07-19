@@ -28,6 +28,8 @@ const MIN_DATE = moment.utc("1910-01-01");
 
 const RGB_COMPNENT_POSSIBLE_VALUES_COUNT = 256;
 
+// TODO: miksi on sekä tämä tiedosto että helpperit???
+
 var lcUtil = {};
 (function(context){
 

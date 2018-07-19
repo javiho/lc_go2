@@ -64,7 +64,7 @@
         <div id="note-changing-div" class="border rounded p-1">
             <button class="btn" type="button" data-toggle="collapse" data-target="#note-changing-form-div">Selected note</button>
             <div id="note-changing-form-div" class="collapse">
-                <form id="note-changing-form" data-action="/change_note" data-method="post">
+                <form id="note-changing-form" data-action="unused-attribute-for-now" data-method="unused-attribute-for-now">
                     <div class="form-group">
                         <label for="note-changing-text-input">Note text</label>
                         <input id="note-changing-text-input" type="text" class="form-control form-control-sm" name="text" value="(No note selected)">
@@ -82,11 +82,19 @@
                         <input type="color" id="note-changing-color-input" name="color" value="#AAAAAA">
                     </div>
                     <input id="note-changing-id" type="text" name="id" hidden>
-                    <input type="submit" class="button" value="Save"></input>
+                    <input id="note-changing-submit" type="submit" class="button" value="Save"></input>
+                    <input id="note-deleting-submit" type="submit" class="button" value="Delete"></input>
                     <!--<input type="submit" name="save-submit" class="button" value="Save"></input>-->
                     <!--<input type="submit" name="delete-submit" class="button" value="Delete"></input>-->
                 </form>
             </div>
+            <!-- TODO: pois
+            <div id="note-deleting-div">
+                <form id="note-changing-form" data-action="/delete_note" data-method="delete">
+                    <input id="note-deleting-id" type="text" name="id" hidden>
+                    <input type="submit" class="button" value="Delete"></input>
+                </form>
+            </div>-->
         </div>
 
         <div id="new-note-form-wrapper-div" class="border rounded p-1">

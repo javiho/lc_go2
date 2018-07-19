@@ -13,6 +13,8 @@ var selectedTimeBoxes = null; // jQuery object
 var visibleNotes = []; // Stores the Note objects of which are visible in the calendar.
 var zoomLevel = defaultZoomLevel; // Integers. Negatives are for zooming out.
 
+var lastClickedSaveDeleteSubmit = ""; // TODO: pitäisi keksiä parempi tapa?
+
 function initialize(){
     console.log("initializing");
     lcOptionsForm = $('#lc-options-form');
@@ -72,11 +74,32 @@ function initialize(){
         }
         e.preventDefault();
     });
+
+    $('#note-changing-submit').click(function(e){
+        lastClickedSaveDeleteSubmit = "save";
+    });
+    $('#note-deleting-submit').click(function(e){
+        lastClickedSaveDeleteSubmit = "delete";
+    });
+    // TODO: miten voi tehdä niin, että voi lähettää samasta formista sekä delete että change requestin eri napeilla?
+    // TODO: TÄHÄN JÄÄTIIN
     $('#note-changing-form').submit(function(e){
-        $.ajax( $(this).attr("data-action"),
+        var httpMethod;
+        var formActionUrl;
+        if(lastClickedSaveDeleteSubmit === "save") {
+            httpMethod = "POST";
+            formActionUrl = "/change_note";
+        }else if(lastClickedSaveDeleteSubmit === "delete"){
+            httpMethod = "POST"; // TODO: DELETE? mutta delete aiheuttaa ongelmia palvelinpuolella!
+            formActionUrl = "/delete_note";
+        }else{
+            console.assert(false, "Bug.");
+        }
+        console.log("Change/delete note: sending this:", $(this).serialize());
+        $.ajax( formActionUrl,
             {
                 data: $(this).serialize(),
-                method: $(this).attr("data-method"),
+                method: httpMethod,
                 error: function(jqXHR, textStatus, errorThrown){ alert("error'd: " + errorThrown); },
                 success: function(data, textStatus, jqXHR){
                     console.log("This is what I got: " + data);
@@ -316,6 +339,21 @@ function noteRepClicked(jQuery){
     populateNoteChangingForm(note);
 }
 
+function possiblyClearNoteChangingAndDeletionForm(){
+    var noteChangingIdInput = $('#note-changing-id');
+    var currentNoteId = noteChangingIdInput.val();
+    console.log("possiblyClearNoteChangingAndDeletionForm: currentNoteId:", currentNoteId);
+    if(currentNoteId !== undefined && currentNoteId !== ""){
+        if(!lifeService.doesNoteExist(currentNoteId, life)){
+            clearNoteChangingForm();
+        }
+    }
+}
+
+/*
+    Also populates note deletion form
+    TODO: nimi vaihdettava deletionin mukaan?
+ */
 function populateNoteChangingForm(note){
     var start = note.Start.format(isoDateFormatString);
     var end = note.End.format(isoDateFormatString);
@@ -329,20 +367,29 @@ function populateNoteChangingForm(note){
     $('#note-changing-start-input').attr('value', start);
     $('#note-changing-end-input').attr('value', end);
     $('#note-changing-id').attr('value', id);
+
+    $('#note-deleting-id').attr('value', id);
 }
 
+/*
+    Also clears note deletion form
+    TODO: nimi vaihdettava deletionin mukaan?
+ */
 function clearNoteChangingForm(){
     $('#note-changing-text-input').val(noNoteSelectedString);
     $('#note-changing-color-input').val(defaultColorHex);
     $('#note-changing-start-input').attr('value', "");
     $('#note-changing-end-input').attr('value', "");
     $('#note-changing-id').attr('value', "");
+
+    $('#note-deleting-id').attr('value', "");
 }
 
 function updateLifeComponents(){
     updateLifeOptions();
     updateLifeCalendar();
     updateNotesDiv();
+    possiblyClearNoteChangingAndDeletionForm();
     updateNoteVisibilitiesDiv();
 }
 
@@ -410,8 +457,10 @@ function updateLifeCalendar(){
 }
 
 function updateNotesDiv(){
+    console.log("updateNotesDiv called");
     var timeBoxes = selectedTimeBoxes;
     if(timeBoxes === null){
+        //console.log("updateNotesDiv: timeBoxes was null. returning");
         return;
     }
     console.assert(timeBoxes !== undefined, "Bug.");
@@ -442,6 +491,7 @@ function updateNotesDiv(){
 
 
     var notes = lifeService.getNotesInTimeBoxesInterval(timeBoxes, life);
+    //console.log("updateNotesDiv: notes:", notes);
     var noteRepElement = $('#template-storage-div .js-note-rep');
     notes.forEach(function(note){
         var newNoteRepElement = noteRepElement.clone();
