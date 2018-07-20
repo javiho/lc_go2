@@ -1,19 +1,19 @@
 "use strict";
 
-var resolutionUnit = "Week"; // TODO: saatava serveriltä, ehkä samalla kertaa kuin life.
+let resolutionUnit = "Week"; // TODO: saatava serveriltä, ehkä samalla kertaa kuin life.
 //$(initialize);
 $(document).ready(initialize);
 
-var life;
-var lcOptionsForm;
+let life;
+let lcOptionsForm;
 
-var stringsAndMoments = {}; // { "2018-01-01": moment.utc("2018-01-01"), etc. }
+//let stringsAndMoments = {}; // { "2018-01-01": moment.utc("2018-01-01"), etc. } // TODO: tämmöistä voi käyttää jos tarvitsee
 //var selectedTimeBox = null; // TODO: Jos dataa laitetaan DOMiin, niin tämänkin voisi
-var selectedTimeBoxes = null; // jQuery object
-var visibleNotes = []; // Stores the Note objects of which are visible in the calendar.
-var zoomLevel = defaultZoomLevel; // Integers. Negatives are for zooming out.
+let selectedTimeBoxes = null; // jQuery object
+let visibleNotes = []; // Stores the Note objects of which are visible in the calendar.
+let zoomLevel = defaultZoomLevel; // Integers. Negatives are for zooming out.
 
-var lastClickedSaveDeleteSubmit = ""; // TODO: pitäisi keksiä parempi tapa?
+let lastClickedSaveDeleteSubmit = ""; // TODO: pitäisi keksiä parempi tapa?
 
 function initialize(){
     console.log("initializing");
@@ -23,17 +23,17 @@ function initialize(){
         console.log("form inputs:");
         console.log(lcOptionsForm.children("input, select"));
         lcOptionsForm.children("input, select").each(function(){
-            var isValid = $(this)[0].checkValidity(); // onko html-validaation mukaan validi?
+            const isValid = $(this)[0].checkValidity(); // onko html-validaation mukaan validi?
             if(!isValid){
                 $(this).addClass(isInvalidClass);
             }
         });
-        var startInput = $('#life-start-input');
-        var endInput = $('#life-end-input');
-        var startInputValue = moment.utc(startInput.val());
-        var endInputValue = moment.utc(endInput.val());
-        var isStartValid = startInputValue.isSameOrAfter(MIN_DATE) && startInputValue.isBefore(MAX_DATE);
-        var isEndValid = endInputValue.isSameOrAfter(MIN_DATE) && endInputValue.isBefore(MAX_DATE);
+        const startInput = $('#life-start-input');
+        const endInput = $('#life-end-input');
+        let startInputValue = moment.utc(startInput.val());
+        let endInputValue = moment.utc(endInput.val());
+        let isStartValid = startInputValue.isSameOrAfter(MIN_DATE) && startInputValue.isBefore(MAX_DATE);
+        let isEndValid = endInputValue.isSameOrAfter(MIN_DATE) && endInputValue.isBefore(MAX_DATE);
         if(!isStartValid){
             startInput.addClass(isInvalidClass);
             startInput.next().text("Date out of range");
@@ -50,7 +50,7 @@ function initialize(){
             console.log("invalid classes add'd!");
             startInput.add(endInput).next().text("Erroneous chronology");
         }
-        var isAnyInvalid = false;
+        let isAnyInvalid = false;
         lcOptionsForm.children("input, select").each(function(){
             console.log("loopung");
             if($(this).hasClass(isInvalidClass)){
@@ -75,17 +75,17 @@ function initialize(){
         e.preventDefault();
     });
 
-    $('#note-changing-submit').click(function(e){
+    $('#note-changing-submit').click(function(){
         lastClickedSaveDeleteSubmit = "save";
     });
-    $('#note-deleting-submit').click(function(e){
+    $('#note-deleting-submit').click(function(){
         lastClickedSaveDeleteSubmit = "delete";
     });
     // TODO: miten voi tehdä niin, että voi lähettää samasta formista sekä delete että change requestin eri napeilla?
     // TODO: TÄHÄN JÄÄTIIN
     $('#note-changing-form').submit(function(e){
-        var httpMethod;
-        var formActionUrl;
+        let httpMethod;
+        let formActionUrl;
         if(lastClickedSaveDeleteSubmit === "save") {
             httpMethod = "POST";
             formActionUrl = "/change_note";
@@ -123,7 +123,7 @@ function initialize(){
     });
 
     $(document).click(function(e){
-        var eventTargetJQuery = $(e.target);
+        const eventTargetJQuery = $(e.target);
         //console.log("eventTarget:", eventTargetJQuery);
         if(eventTargetJQuery.is(".js-note-rep")){
             noteRepClicked($(e.target));
@@ -134,15 +134,15 @@ function initialize(){
             noteRepClicked($(e.target));
         }*/
         if(eventTargetJQuery.is(".js-note-visibility-item-label")){
-            var noteVisibilityItem = eventTargetJQuery.parent(); // It's parent has the data attribute needed.
+            let noteVisibilityItem = eventTargetJQuery.parent(); // It's parent has the data attribute needed.
             noteRepClicked(noteVisibilityItem);
         }
         if(eventTargetJQuery.is(".js-note-visibility-item-checkbox")){
             console.log("checkbx state changedd!");
             // Note: Changing the value of an input element using JavaScript, using .val() for example, won't fire the event.
-            var checked = eventTargetJQuery[0].checked;
-            var noteId = eventTargetJQuery.parent().attr('data-note-id');
-            var note = lifeService.getNoteById(noteId, life);
+            let checked = eventTargetJQuery[0].checked;
+            let noteId = eventTargetJQuery.parent().attr('data-note-id');
+            let note = lifeService.getNoteById(noteId, life);
             console.assert(note !== undefined, "Note of id " + noteId + " is undefined.");
             if(checked){
                 if(!visibleNotes.includes(note)){
@@ -150,7 +150,7 @@ function initialize(){
                 }
             }else{
                 if(visibleNotes.includes(note)){
-                    var originalLength = visibleNotes.length;
+                    let originalLength = visibleNotes.length;
                     visibleNotes = lcUtil.arrayWithoutElement(note, visibleNotes);
                     console.assert(visibleNotes.length < originalLength, "Bug.");
                 }
@@ -201,42 +201,33 @@ function initialize(){
     TODO: ensimmäinen luuppi riittänee jos laittaa värityksen ja sen logiikan sinne. Tosin päivämäärät voidaan haluta varastoida myöhempää käyttöä varten.
  */
 function updatePastFutureColoring(){
-    var now = (new Date()).getTime();
+    const now = (new Date()).getTime();
 
-    var tbByStartEndTimesResult = getTimeBoxesByStartAndEnd();
-    var timeBoxEndTimes = tbByStartEndTimesResult.endTimes;
-    var lifeEndMs = life.End.valueOf();
-    var lifeStartMs = life.Start.valueOf();
-    var uncertaintyStart = lifeService.computeLifetimeUncertaintyStart(lifeStartMs, lifeEndMs);
+    const tbByStartEndTimesResult = getTimeBoxesByStartAndEnd();
+    const timeBoxEndTimes = tbByStartEndTimesResult.endTimes;
+    const lifeEndMs = life.End.valueOf();
+    const lifeStartMs = life.Start.valueOf();
+    const uncertaintyStart = lifeService.computeLifetimeUncertaintyStart(lifeStartMs, lifeEndMs);
 
-    //console.log("updatePastDuruterColoring: total boxes:", Object.getOwnPropertyNames(timeBoxStartTimes).length);
-    //console.log("own property names:", Object.getOwnPropertyNames(timeBoxStartTimes));
-    var previousKeyAsNumber = 0;
-    //console.log("Keys:");
-    //console.log(timeBoxEndTimes.keys());
-    for(var key of timeBoxEndTimes.keys()){
-        var keyAsNumber = Number(key);
+    let previousKeyAsNumber = 0;
+    for(let key of timeBoxEndTimes.keys()){
+        const keyAsNumber = Number(key);
         console.assert(previousKeyAsNumber < keyAsNumber, "Keys are not in ascending order.");
-        let tb = timeBoxEndTimes.get(key);
+        const tb = timeBoxEndTimes.get(key);
         if( keyAsNumber > now ){
             tb.removeClass('past-colored');
-            var uncertaintyValue = lifeService.uncertaintyFunction(lifeEndMs, uncertaintyStart, keyAsNumber);
+            const uncertaintyValue = lifeService.uncertaintyFunction(lifeEndMs, uncertaintyStart, keyAsNumber);
             if(uncertaintyValue > 0){
-                var uncertaintySpecificShadeOfGrey = Math.ceil( (1 - uncertaintyValue) * RGB_COMPNENT_POSSIBLE_VALUES_COUNT);
-                //console.log("uncertaintySpecificShadeOfGrey:", uncertaintySpecificShadeOfGrey );
-                //tb.css({backgroundColor: "blue"});
+                const uncertaintySpecificShadeOfGrey = Math.ceil( (1 - uncertaintyValue) * RGB_COMPONENT_POSSIBLE_VALUES_COUNT);
                 tb.css({backgroundColor: `rgb(${uncertaintySpecificShadeOfGrey}, ${uncertaintySpecificShadeOfGrey}, ${uncertaintySpecificShadeOfGrey})`});
-                //tb.css({backgroundColor: "rgb(100, 100, 100)"});
-                //console.log("shold apply uncerainty color");
             }else{
-                //console.log("should not apply uncertainty color");
                 tb.addClass('future-colored');
             }
         }else if(keyAsNumber < now ){
             tb.addClass('past-colored');
             tb.removeClass('future-colored');
         }else{
-            console.log("ITS THETSFA DSAMMSMFE!!!");
+            console.log("updatePastFutureColoring: keyAsNumber === now");
         }
         previousKeyAsNumber = keyAsNumber;
     }
@@ -248,14 +239,14 @@ function updatePastFutureColoring(){
     TODO: Kai niiden ny tarvii olla stringejä jos käyteään mappia, mut katotaan.
  */
 function getTimeBoxesByStartAndEnd(){
-    var timeBoxStartTimes = new Map();
-    var timeBoxEndTimes = new Map();
+    const timeBoxStartTimes = new Map();
+    const timeBoxEndTimes = new Map();
     $('#life-calendar .time-box').each(function(){
-        let tb = $(this);
-        var startMs = lcHelpers.dataAttrToEpoch(tb, 'data-start');
-        var startMsString = startMs.toString();
-        var endMs = lcHelpers.dataAttrToEpoch(tb, 'data-end');
-        var endMsString = endMs.toString();
+        const tb = $(this);
+        const startMs = lcHelpers.dataAttrToEpoch(tb, 'data-start');
+        const startMsString = startMs.toString();
+        const endMs = lcHelpers.dataAttrToEpoch(tb, 'data-end');
+        const endMsString = endMs.toString();
         timeBoxStartTimes.set(startMsString, tb);
         timeBoxEndTimes.set(endMsString, tb);
     });
@@ -263,8 +254,8 @@ function getTimeBoxesByStartAndEnd(){
 }
 
 function zoomLifeCalendar(){
-    var newTimeBoxWidth = lcHelpers.getZoomedDimension(timeBoxDefaultWidth, zoomMultiplier, zoomLevel);
-    var newTimeBoxHeight = lcHelpers.getZoomedDimension(timeBoxDefaultHeight, zoomMultiplier, zoomLevel);
+    const newTimeBoxWidth = lcHelpers.getZoomedDimension(timeBoxDefaultWidth, zoomMultiplier, zoomLevel);
+    const newTimeBoxHeight = lcHelpers.getZoomedDimension(timeBoxDefaultHeight, zoomMultiplier, zoomLevel);
     // TODO: näköjään hieman nopeampaa ilman funktiokutsuja, joten vosi laskea arvot etukäteen
     // TODO: myöskin jokainen property ilmeisesti lasketaan ja piirretään erikseen?
     $('.time-box').css({
@@ -295,10 +286,10 @@ function glueMainPageData(data){
 
 function timeBoxClicked(e, multiSelectionOn = false){
     console.log("time box click'd!");
-    var fsTime = performance.now();
-    var timeBox = $(e.target);
+    let fsTime = performance.now();
+    const timeBox = $(e.target);
 
-    var timeBoxIsSelected = selectedTimeBoxes !== undefined && selectedTimeBoxes !== null;
+    const timeBoxIsSelected = selectedTimeBoxes !== undefined && selectedTimeBoxes !== null;
     if(!(multiSelectionOn && timeBoxIsSelected)){
         if(timeBoxIsSelected){
             selectedTimeBoxes.removeClass(selectedTimeBoxRangeClass);
@@ -306,9 +297,9 @@ function timeBoxClicked(e, multiSelectionOn = false){
         selectedTimeBoxes = timeBox;
         selectedTimeBoxes.addClass(selectedTimeBoxRangeClass);
     }else{
-        var startOfRange = moment.utc( selectedTimeBoxes.first().attr('data-start') );
-        var endOfRange = moment.utc( timeBox.attr('data-end') );
-        var timeBoxesInInterval = getTimeBoxesByInterval(startOfRange, endOfRange);
+        const startOfRange = moment.utc( selectedTimeBoxes.first().attr('data-start') );
+        const endOfRange = moment.utc( timeBox.attr('data-end') );
+        const timeBoxesInInterval = getTimeBoxesByInterval(startOfRange, endOfRange);
         $('#life-calendar .time-box').removeClass(selectedTimeBoxRangeClass);
         timeBoxesInInterval.forEach(tb => tb.addClass(selectedTimeBoxRangeClass));
         // I can't figure out how to make a jQuery object out of array of jQuery objects in an efficient way
@@ -319,7 +310,7 @@ function timeBoxClicked(e, multiSelectionOn = false){
     updateNotesDiv();
     updateNewNoteForm();
 
-    var notesInTimeBox = lifeService.getNotesInTimeBoxInterval(timeBox, life);
+    const notesInTimeBox = lifeService.getNotesInTimeBoxInterval(timeBox, life);
     if(notesInTimeBox.length === 0){
         clearNoteChangingForm();
     }else{
@@ -329,19 +320,18 @@ function timeBoxClicked(e, multiSelectionOn = false){
 }
 
 function noteRepClicked(jQuery){
-    //console.log("note-rep click'd!");
-    var noteRep = jQuery;
+    const noteRep = jQuery;
     console.assert(noteRep !== undefined, "noteRep undefined");
-    var id = noteRep.data("note-id");
+    const id = noteRep.data("note-id");
     console.log("note rep click'd of id", id);
-    var note = lifeService.getNoteById(id, life);
+    const note = lifeService.getNoteById(id, life);
     console.assert(note !== undefined, "Note is undefined.");
     populateNoteChangingForm(note);
 }
 
 function possiblyClearNoteChangingAndDeletionForm(){
-    var noteChangingIdInput = $('#note-changing-id');
-    var currentNoteId = noteChangingIdInput.val();
+    const noteChangingIdInput = $('#note-changing-id');
+    const currentNoteId = noteChangingIdInput.val();
     console.log("possiblyClearNoteChangingAndDeletionForm: currentNoteId:", currentNoteId);
     if(currentNoteId !== undefined && currentNoteId !== ""){
         if(!lifeService.doesNoteExist(currentNoteId, life)){
@@ -355,11 +345,11 @@ function possiblyClearNoteChangingAndDeletionForm(){
     TODO: nimi vaihdettava deletionin mukaan?
  */
 function populateNoteChangingForm(note){
-    var start = note.Start.format(isoDateFormatString);
-    var end = note.End.format(isoDateFormatString);
-    var text = note.Text;
-    var color = note.Color;
-    var id = note.Id;
+    const start = note.Start.format(isoDateFormatString);
+    const end = note.End.format(isoDateFormatString);
+    const text = note.Text;
+    const color = note.Color;
+    const id = note.Id;
     console.assert([start, end, text, id].every(x => x !== undefined), [start, end, text, id]);
     //$('#note-changing-text-input').attr('value', text); // This doesn't work for some reason, replaced with the next line.
     $('#note-changing-text-input').val(text);
@@ -401,28 +391,28 @@ function updateLifeOptions(){
 
 function updateLifeCalendar(){
     //console.log("updating life calendar");
-    var lifeCalendarElement = $('#life-calendar');
-    var templateStorageDiv = $('#template-storage-div');
+    const lifeCalendarElement = $('#life-calendar');
+    const templateStorageDiv = $('#template-storage-div');
     lifeCalendarElement.empty();
-    var timeBoxElement = templateStorageDiv.children('.js-time-box');
-    var noteBoxElement = templateStorageDiv.children('.js-note-box');
+    const timeBoxElement = templateStorageDiv.children('.js-time-box');
+    const noteBoxElement = templateStorageDiv.children('.js-note-box');
 
-    var timeBoxDOs = lifeService.createTimeBoxes(life, resolutionUnit); // timeBoxDataObjects
+    const timeBoxDOs = lifeService.createTimeBoxes(life, resolutionUnit); // timeBoxDataObjects
     //var newTimeBoxElements = $([]);
-    var newTimeBoxElements = [];
+    const newTimeBoxElements = [];
     //console.log("thissit", newTimeBoxElements);
     timeBoxDOs.forEach(function(timeBoxDO){
-        var newTimeBoxElement = timeBoxElement.clone();
+        const newTimeBoxElement = timeBoxElement.clone();
         newTimeBoxElement.attr("data-start", timeBoxDO.Start.format(isoDateFormatString));
         newTimeBoxElement.attr("data-end", timeBoxDO.End.format(isoDateFormatString));
         // TODO: intervalli timeboxissa poistettu
         //var intervalElement = newTimeBoxElement.children('.js-past-future-coloring');
         //intervalElement.text( lcUtil.intervalToPresentableString(timeBoxDO.Start, timeBoxDO.End, resolutionUnit) );
         timeBoxDO.NoteBoxes.forEach(function(noteBox){
-            var newNoteBoxElement = noteBoxElement.clone();
+            const newNoteBoxElement = noteBoxElement.clone();
             newNoteBoxElement.attr('data-note-id', noteBox.Note.Id);
             newNoteBoxElement.text(noteBox.Note.Text);
-            var noteColor = noteBox.Note.Color;
+            const noteColor = noteBox.Note.Color;
             newNoteBoxElement.css("background-color", noteColor);
             newNoteBoxElement.appendTo(newTimeBoxElement);
 
@@ -437,7 +427,7 @@ function updateLifeCalendar(){
         //console.log("add'd!");
     });
     console.log("about to append ", newTimeBoxElements.length);
-    var fsTime = performance.now();
+    let fsTime = performance.now();
     /*var firstNewTimeBoxElement = newTimeBoxElements[0];
     newTimeBoxElements.forEach(function(ntbe){
         firstNewTimeBoxElement = firstNewTimeBoxElement.add(ntbe);
@@ -445,7 +435,7 @@ function updateLifeCalendar(){
     //console.log("updateLifeCalendar: adding to jQuery took", performance.now() - fsTime);
     lifeCalendarElement.append(firstNewTimeBoxElement);*/
     //lifeCalendarElement.append(newTimeBoxElements);
-    var arrayAsJQuery = $(newTimeBoxElements).map(function(){
+    const arrayAsJQuery = $(newTimeBoxElements).map(function(){
         return this.toArray();
     });
     console.log("updateLifeCalendar: mapping took:", performance.now() - fsTime);
@@ -458,43 +448,38 @@ function updateLifeCalendar(){
 
 function updateNotesDiv(){
     console.log("updateNotesDiv called");
-    var timeBoxes = selectedTimeBoxes;
+    const timeBoxes = selectedTimeBoxes;
     if(timeBoxes === null){
         //console.log("updateNotesDiv: timeBoxes was null. returning");
         return;
     }
     console.assert(timeBoxes !== undefined, "Bug.");
-    var contentsOfTimeBoxDiv = $('#contents-of-time-box-div');
+    const contentsOfTimeBoxDiv = $('#contents-of-time-box-div');
     contentsOfTimeBoxDiv.empty();
-    var intervalSpan = $('#selected-time-box-interval-span');
-    var startDataAttribute = selectedTimeBoxes.first().attr('data-start');
-    var endDataAttribute = selectedTimeBoxes.last().attr('data-end');
+    const intervalSpan = $('#selected-time-box-interval-span');
+    const startDataAttribute = selectedTimeBoxes.first().attr('data-start');
+    const endDataAttribute = selectedTimeBoxes.last().attr('data-end');
 
-    var intervalStartString = startDataAttribute;
-    var intervalEndString = endDataAttribute;
-    var intervalString = intervalStartString + " to " + intervalEndString;
+    const intervalStartString = startDataAttribute;
+    const intervalEndString = endDataAttribute;
+    const intervalString = intervalStartString + " to " + intervalEndString;
     intervalSpan.text(intervalString);
 
-    var intervalAgeSpan = $('#selected-time-box-interval-age-span');
-    var intervalStartMoment = moment.utc(startDataAttribute);
-    var intervalEndMoment = moment.utc(endDataAttribute);
-    var intervalStartAgeComponents = getAgeAsDateComponents(life.Start, intervalStartMoment);
-    var intervalEndAgeComponents = getAgeAsDateComponents(life.Start, intervalEndMoment);
-    //console.log("life start:", life.Start, "intervalStartMoment:", intervalStartMoment, "diff:", intervalStartMoment.diff(life.Start));
-    //console.log("life start:", life.Start, "intervalEndMoment:", intervalEndMoment, "diff:", intervalEndMoment.diff(life.Start));
-    //var intervalStartAge = moment.duration( intervalStartMoment.diff(life.Start) );
-    //var intervalEndAge = moment.duration( intervalEndMoment.diff(life.Start) );
-    //var intervalAgeText = intervalStartAge.as("days") + " to " + intervalEndAge.as("days");
-    var intervalAgeText = `${intervalStartAgeComponents.years}y ${intervalStartAgeComponents.months}m to ` +
+    const intervalAgeSpan = $('#selected-time-box-interval-age-span');
+    const intervalStartMoment = moment.utc(startDataAttribute);
+    const intervalEndMoment = moment.utc(endDataAttribute);
+    const intervalStartAgeComponents = lcUtil.getAgeAsDateComponents(life.Start, intervalStartMoment);
+    const intervalEndAgeComponents = lcUtil.getAgeAsDateComponents(life.Start, intervalEndMoment);
+    const intervalAgeText = `${intervalStartAgeComponents.years}y ${intervalStartAgeComponents.months}m to ` +
             `${intervalEndAgeComponents.years}y ${intervalEndAgeComponents.months}m`;
     intervalAgeSpan.text(intervalAgeText);
 
 
-    var notes = lifeService.getNotesInTimeBoxesInterval(timeBoxes, life);
+    const notes = lifeService.getNotesInTimeBoxesInterval(timeBoxes, life);
     //console.log("updateNotesDiv: notes:", notes);
-    var noteRepElement = $('#template-storage-div .js-note-rep');
+    const noteRepElement = $('#template-storage-div .js-note-rep');
     notes.forEach(function(note){
-        var newNoteRepElement = noteRepElement.clone();
+        const newNoteRepElement = noteRepElement.clone();
         newNoteRepElement.attr('data-note-id', note.Id);
         newNoteRepElement.text(note.Text);
         newNoteRepElement.css('background-color', note.Color);
@@ -502,40 +487,27 @@ function updateNotesDiv(){
     });
 }
 
-/*
-    Pre-condition: birth and currentMoment are Moments.
-    Returns age with years, and extra months, and extra days. Returns a following kind of object:
-    {years: Number, months: Number, days: Number}. Eg. when birth is 1.1.2000 and current moment is 1.1.2001,
-    years is 1 and others are 0.
- */
-function getAgeAsDateComponents(birth, currentMoment){
-    var years = currentMoment.year() - birth.year();
-    var months = currentMoment.month() - birth.month();
-    var days = currentMoment.days() - birth.days();
-    return {years: years, months: months, days: days};
-}
-
 function updateNewNoteForm(){
     //console.log("updating new note form");
-    var selectedTimeBoxes = $(selectedTimeBoxRangeSelector);
-    var firstSelectedTB = selectedTimeBoxes.first();
-    var lastSelectedTB = selectedTimeBoxes.last();
-    var selectedRangeStartDate = moment.utc( firstSelectedTB.attr('data-start') );
-    var selectedRangeEndDate = moment.utc( lastSelectedTB.attr('data-end') );
-    var startString = selectedRangeStartDate.format(isoDateFormatString);
-    var endString = selectedRangeEndDate.format(isoDateFormatString);
+    const selectedTimeBoxes = $(selectedTimeBoxRangeSelector);
+    const firstSelectedTB = selectedTimeBoxes.first();
+    const lastSelectedTB = selectedTimeBoxes.last();
+    const selectedRangeStartDate = moment.utc( firstSelectedTB.attr('data-start') );
+    const selectedRangeEndDate = moment.utc( lastSelectedTB.attr('data-end') );
+    const startString = selectedRangeStartDate.format(isoDateFormatString);
+    const endString = selectedRangeEndDate.format(isoDateFormatString);
     $('#new-note-start').val(startString);
     $('#new-note-end').val(endString);
 }
 
 function updateNoteVisibilitiesDiv() {
-    var originalJsNoteVisibilityItem = $('#template-storage-div .js-note-visibility-item');
+    const originalJsNoteVisibilityItem = $('#template-storage-div .js-note-visibility-item');
     console.assert(originalJsNoteVisibilityItem.length === 1, "Problems in storage area.");
-    var noteVisibilityItemContainer = $('#note-visibility-item-container');
+    const noteVisibilityItemContainer = $('#note-visibility-item-container');
     noteVisibilityItemContainer.empty();
     life.Notes.forEach(function(note){
-        var newNoteVisibilityItem = originalJsNoteVisibilityItem.clone();
-        var inputDomId = lcUtil.generateUniqueId();
+        const newNoteVisibilityItem = originalJsNoteVisibilityItem.clone();
+        const inputDomId = lcUtil.generateUniqueId();
         newNoteVisibilityItem.find('input').attr('id', inputDomId);
         newNoteVisibilityItem.find('label').attr('for', inputDomId);
 
@@ -561,34 +533,34 @@ function updateNoteVisibilitiesDiv() {
 function getTimeBoxesByInterval(start, end){
     //console.log("getTimeBoxesByInteval called");
     //console.log("start:", start, "end:", end);
-    var allTimeBoxes = $('#life-calendar .time-box');
+    const allTimeBoxes = $('#life-calendar .time-box');
     console.assert(start.hour() === 0 && end.hour() === 0, "Hours not 0:", start, end);
     console.assert(allTimeBoxes.length > 0);
     //console.log("start and end:", start, end);
-    var startMs = start.valueOf();
-    var endMs = end.valueOf();
+    const startMs = start.valueOf();
+    const endMs = end.valueOf();
     //console.log("start and end: ", startMs, endMs);
-    var timeBoxesInInterval = [];
-    var intervalStartEncountered = false;
-    var intervalEndEncountered = false;
-    var counter = 0;
+    const timeBoxesInInterval = [];
+    let intervalStartEncountered = false;
+    let intervalEndEncountered = false;
+    let counter = 0;
     allTimeBoxes.each(function(){
         // Can't break out of loop so return immediately if there is no reason to continue iteration.
         if(intervalEndEncountered){
             return;
         }
-        var tb = $(this);
+        const tb = $(this);
         // TODO: momenttien muodostamiseen kuluu aikaa, jos niitä tehdään paljon
         //var tbStart = dataAttrToMoment(tb, 'data-start');
         //var tbEnd = dataAttrToMoment(tb, 'data-end');
-        var tbStartMs = lcHelpers.dataAttrToEpoch(tb, 'data-start');
-        var tbEndMs = lcHelpers.dataAttrToEpoch(tb, 'data-end');
+        const tbStartMs = lcHelpers.dataAttrToEpoch(tb, 'data-start');
+        const tbEndMs = lcHelpers.dataAttrToEpoch(tb, 'data-end');
         //console.log("Time box: -----")
         //console.log("data-start:", tb.attr('data-start'));
         //console.log("data-end:", tb.attr('data-end'));
         //console.log(tbEnd, start, tbEnd.isAfter(start));
         //console.log("tb start and end:", tbStartMs, tbEndMs);
-        var isInInterval = tbEndMs > startMs && tbStartMs < endMs;
+        const isInInterval = tbEndMs > startMs && tbStartMs < endMs;
         //console.log("is in interval:", tbEndMs, ">", startMs, "=", tbEndMs > startMs,
         //    "&", tbStartMs, "<", tbEndMs, "=", tbStartMs < endMs,
         //    "->", isInInterval);

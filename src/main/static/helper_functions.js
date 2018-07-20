@@ -1,4 +1,6 @@
-var lcHelpers = {};
+"use strict";
+
+const lcHelpers = {};
 (function(context){
 
     context.getZoomedDimension = function(dimensionLength, zoomMultiplier, zoomLevel){
@@ -13,7 +15,7 @@ var lcHelpers = {};
         Pre-condition: jQuery has a valid date string as dateAttr.
      */
     context.dataAttrToEpoch = function(jQuery, dateAttr){
-        var dateString = jQuery.attr(dateAttr);
+        const dateString = jQuery.attr(dateAttr);
         //console.log(jQuery)
         console.assert(dateString !== undefined, dateAttr, "of", jQuery, "was not found.");
         if(dateString === dataEmptyValue){
@@ -21,7 +23,7 @@ var lcHelpers = {};
             console.assert(false, "dataEmptyValue in data attribute.");
         }
         console.assert(dateString !== dataEmptyValue);
-        var asEpoch = lcUtil.ISODateStringToEpoch(dateString);
+        const asEpoch = lcUtil.ISODateStringToEpoch(dateString);
         //console.assert(asMoment.hours() === 0, "Hours not 0:", asMoment);
         return asEpoch;
     }
@@ -30,14 +32,14 @@ var lcHelpers = {};
     Pre-condition: jQuery must have a valid date string as a value of dataAttr attribute.
     */
     context.dataAttrToMoment = function(jQuery, dateAttr){
-        var dateString = jQuery.attr(dateAttr);
+        const dateString = jQuery.attr(dateAttr);
         //console.log(jQuery)
         console.assert(dateString !== undefined);
         if(dateString === dataEmptyValue){
             console.log(jQuery);
         }
         console.assert(dateString !== dataEmptyValue);
-        var asMoment = moment.utc(dateString);
+        const asMoment = moment.utc(dateString);
         console.assert(asMoment.hours() === 0, "Hours not 0:", asMoment);
         return asMoment;
     };

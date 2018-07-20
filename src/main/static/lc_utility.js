@@ -1,4 +1,5 @@
 "use strict";
+
 const isoDateFormatString = "YYYY-MM-DD";
 const noNoteSelectedString = "(No note selected)";
 const defaultColorHex = '#AAAAAA';
@@ -26,11 +27,11 @@ const timeUnits = {
 const MAX_DATE = moment.utc("2200-01-01");
 const MIN_DATE = moment.utc("1910-01-01");
 
-const RGB_COMPNENT_POSSIBLE_VALUES_COUNT = 256;
+const RGB_COMPONENT_POSSIBLE_VALUES_COUNT = 256;
 
 // TODO: miksi on sekä tämä tiedosto että helpperit???
 
-var lcUtil = {};
+const lcUtil = {};
 (function(context){
 
     /*
@@ -45,18 +46,18 @@ var lcUtil = {};
         Returns milliseconds based on shortDateString.
      */
     context.ISODateStringToEpoch = function(shortDateString){
-        var componentStrings = shortDateString.split("-");
-        var y = Number(componentStrings[0]);
-        var m = Number(componentStrings[1]) - 1; // In js months are 0 indexed although years and days are not lol.
-        var d = Number(componentStrings[2]);
-        var date = Date.UTC(y, m, d, 0, 0, 0);
+        const componentStrings = shortDateString.split("-");
+        const y = Number(componentStrings[0]);
+        const m = Number(componentStrings[1]) - 1; // In js months are 0 indexed although years and days are not lol.
+        const d = Number(componentStrings[2]);
+        const date = Date.UTC(y, m, d, 0, 0, 0);
         //console.log("ISODateStringToEpoch date: ", date);
         return date;
     };
 
     context.generateUniqueId = function(){
-        var timePart = new Date().getTime().toString(36); // TODO: Miksi juuri 36?
-        var randomPart = Math.random().toString(36).substring(2); // The two first chars are '0' and '.'.
+        const timePart = new Date().getTime().toString(36); // TODO: Miksi juuri 36?
+        const randomPart = Math.random().toString(36).substring(2); // The two first chars are '0' and '.'.
         return "rid-" + timePart + "-" + randomPart;
     };
 
@@ -65,8 +66,8 @@ var lcUtil = {};
     Returns the first date of that interval.
     */
     context.getFirstDateOfTimeUnit = function(date, timeUnit){
-        var dateClone = date.clone();
-        var firstDate;
+        const dateClone = date.clone();
+        let firstDate;
         if(timeUnit === timeUnits.Month){
             firstDate = dateClone.startOf("month");
         }else if(timeUnit === timeUnits.Year){
@@ -85,7 +86,7 @@ var lcUtil = {};
     };
 
     context.addTimeUnit = function(baseMoment, timeUnitToAdd){
-        var momentClone = baseMoment.clone();
+        const momentClone = baseMoment.clone();
         if(timeUnitToAdd === timeUnits.Day){
             return momentClone.add(1, "days");
         }
@@ -142,7 +143,7 @@ var lcUtil = {};
         log.Panic("bug")
         return ""
         */
-    }
+    };
 
     /*
         Pre-condition: removed and array are not undefined.
@@ -152,6 +153,19 @@ var lcUtil = {};
         console.assert(removed !== undefined);
         console.assert(array !== undefined);
         return array.filter(element => element !== removed);
+    };
+
+    /*
+        Pre-condition: birth and currentMoment are Moments.
+        Returns age with years, and extra months, and extra days. Returns a following kind of object:
+        {years: Number, months: Number, days: Number}. Eg. when birth is 1.1.2000 and current moment is 1.1.2001,
+        years is 1 and others are 0.
+    */
+    context.getAgeAsDateComponents = function(birth, currentMoment){
+        const years = currentMoment.year() - birth.year();
+        const months = currentMoment.month() - birth.month();
+        const days = currentMoment.days() - birth.days();
+        return {years: years, months: months, days: days};
     }
 
 })(lcUtil);

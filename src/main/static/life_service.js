@@ -1,15 +1,17 @@
+"use strict";
+
 // This object contains functions for life and the abstraction of it's presentation in the view, if you catch my meaning.
-var lifeService = {};
+const lifeService = {};
 (function(context){
 
     context.computeLifetimeUncertaintyStart = function(lifeStartMs, lifeEndMs){
         console.assert(lifeStartMs !== undefined);
         console.assert(lifeEndMs !== undefined);
         //var lifeDuration = lifeEndMs - lifeStartMs;
-        var now = new Date().getTime();
-        var remainingLifeDuration = lifeEndMs - now;
+        const now = new Date().getTime();
+        const remainingLifeDuration = lifeEndMs - now;
         return (remainingLifeDuration / 2) + now;
-    }
+    };
 
     /*
     Pre-condition: all parameters are Numbers. uncertaintyStart <= intervalEnd
@@ -23,9 +25,9 @@ var lifeService = {};
             console.log("uncertaintyFunction: gonna return 1");
             return 1;
         }
-        var normalizedIntervalEnd = intervalEnd - uncertaintyStart;
-        var normalizedPoint = point - uncertaintyStart;
-        var percentage = normalizedPoint / normalizedIntervalEnd;
+        const normalizedIntervalEnd = intervalEnd - uncertaintyStart;
+        const normalizedPoint = point - uncertaintyStart;
+        const percentage = normalizedPoint / normalizedIntervalEnd;
         return percentage;
     };
 
@@ -34,8 +36,8 @@ var lifeService = {};
      */
     context.doesNoteExist = function(id, life){
         console.assert(id !== undefined && life !== undefined, "Erroneous parameters");
-        var firstNoteFound = life.Notes.find(n => n.Id === id);
-        var found = firstNoteFound !== undefined;
+        const firstNoteFound = life.Notes.find(n => n.Id === id);
+        const found = firstNoteFound !== undefined;
         if(!found){
             console.log("doesNoteExist: Note of id", id, "was not found.");
         }
@@ -43,7 +45,7 @@ var lifeService = {};
     };
 
     context.getNoteById = function(id, life){
-        var firstNoteFound = life.Notes.find(n => n.Id === id);
+        const firstNoteFound = life.Notes.find(n => n.Id === id);
         console.assert(firstNoteFound !== undefined, "Note of id " + id + " is undefined.");
         return firstNoteFound;
     };
@@ -56,7 +58,7 @@ var lifeService = {};
         käy läpi kaikki notet lifessä
             jos ne > is ja ns < ie
          */
-        var notesInInterval = [];
+        const notesInInterval = [];
         life.Notes.forEach(function(note){
             if(note.End.isAfter(start) && note.Start.isBefore(end)){
                 notesInInterval.push(note);
@@ -83,9 +85,9 @@ var lifeService = {};
         Returns array of notes or empty array.
     */
     context.getNotesInTimeBoxInterval = function(timeBox, life){
-        var startDate = moment.utc(timeBox.attr("data-start"));
-        var endDate = moment.utc(timeBox.attr("data-end"));
-        var notes = lifeService.getNotesByInterval(startDate, endDate, life);
+        const startDate = moment.utc(timeBox.attr("data-start"));
+        const endDate = moment.utc(timeBox.attr("data-end"));
+        const notes = lifeService.getNotesByInterval(startDate, endDate, life);
         return notes;
     };
 
@@ -94,9 +96,9 @@ var lifeService = {};
         and timeBoxes are ordered chronologically.
     */
     context.getNotesInTimeBoxesInterval = function(timeBoxes, life){
-        var startDate = moment.utc(timeBoxes.first().attr("data-start"));
-        var endDate = moment.utc(timeBoxes.last().attr("data-end"));
-        var notes = lifeService.getNotesByInterval(startDate, endDate, life);
+        const startDate = moment.utc(timeBoxes.first().attr("data-start"));
+        const endDate = moment.utc(timeBoxes.last().attr("data-end"));
+        const notes = lifeService.getNotesByInterval(startDate, endDate, life);
         return notes;
     };
 
@@ -106,22 +108,22 @@ var lifeService = {};
     context.createTimeBoxes = function(life, resolutionUnit){
         //var lifeStartDate = moment.utc(life.Start);
         //var lifeEndDate = moment.utc(life.End);
-        var lifeStartDate = life.Start;
-        var lifeEndDate = life.End;
+        const lifeStartDate = life.Start;
+        const lifeEndDate = life.End;
         if(lifeStartDate.isAfter(lifeEndDate) || lifeStartDate.isSame(lifeEndDate)){
             console.log(lifeStartDate);
             console.log(lifeEndDate);
             console.assert(false, "Life start not before life end.");
         }
-        var timeBoxes = [];
-        var counter = 0;
-        var adjustedLifeStart = lcUtil.getFirstDateOfTimeUnit(lifeStartDate, resolutionUnit);
-        for(var t = adjustedLifeStart; true; t = lcUtil.addTimeUnit(t, resolutionUnit)){
+        const timeBoxes = [];
+        let counter = 0;
+        const adjustedLifeStart = lcUtil.getFirstDateOfTimeUnit(lifeStartDate, resolutionUnit);
+        for(let t = adjustedLifeStart; true; t = lcUtil.addTimeUnit(t, resolutionUnit)){
             console.assert(counter < 1000 * 100, "This is probably because of a bug.");
             console.assert(t.hours() === 0, "Hours is not 0.");
-            var tPlusResolutionUnit = lcUtil.addTimeUnit(t, resolutionUnit);
+            const tPlusResolutionUnit = lcUtil.addTimeUnit(t, resolutionUnit);
             console.assert(tPlusResolutionUnit.hours() === 0, "Hours is not 0.");
-            var newTimeBox = lifeService.createTimeBox(t, tPlusResolutionUnit, lifeService.getNoteBoxesByInterval(t, tPlusResolutionUnit, life), counter);
+            const newTimeBox = lifeService.createTimeBox(t, tPlusResolutionUnit, lifeService.getNoteBoxesByInterval(t, tPlusResolutionUnit, life), counter);
             timeBoxes.push(newTimeBox);
             // Life end time is exclusive.
             if(tPlusResolutionUnit.isAfter(lifeEndDate) || tPlusResolutionUnit.isSame(lifeEndDate)){
@@ -158,9 +160,9 @@ var lifeService = {};
         Returns and array of note box data objects.
     */
     context.getNoteBoxesByInterval = function(startDate, endDate, life){
-        var notes = lifeService.getNotesByInterval(startDate, endDate, life);
+        const notes = lifeService.getNotesByInterval(startDate, endDate, life);
         console.assert(notes !== undefined);
-        var noteBoxes = lifeService.createNoteBoxes(notes);
+        const noteBoxes = lifeService.createNoteBoxes(notes);
         return noteBoxes;
     };
 
@@ -168,9 +170,9 @@ var lifeService = {};
         Returns an array of note box data objects.
     */
     context.createNoteBoxes = function(notes){
-        var noteBoxes = [];
+        const noteBoxes = [];
         notes.forEach(function(note){
-            var noteBox = lifeService.createNoteBox(note, lcUtil.generateUniqueId());
+            const noteBox = lifeService.createNoteBox(note, lcUtil.generateUniqueId());
             noteBoxes.push(noteBox);
         });
         return noteBoxes;
