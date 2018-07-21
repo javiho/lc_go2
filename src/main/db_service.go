@@ -9,6 +9,7 @@ import (
 )
 
 var Db *sql.DB
+var lifeId = 1
 
 func initializeDbService(){
 	// dataSourceName's root location is src folder
@@ -26,7 +27,6 @@ func closeDatabase(){
  */
 func loadLifeData() *Life{
 	db := Db
-	lifeId := 1
 	stmt, err := db.Prepare("SELECT * FROM life WHERE id = ?;")
 	checkDbErr(err)
 	rows, err := stmt.Query(lifeId)
@@ -99,6 +99,26 @@ func fetchNotes(lifeId int) []*Note{
 	err = rows.Err()
 	checkDbErr(err)
 	return notes
+}
+
+func addNoteToDb(note Note){
+	db := Db
+	stmt, err := db.Prepare("INSERT INTO note (id, text, start, end, color, life_id) VALUES (?, ?, ?, ?, ?, ?);")
+	checkDbErr(err)
+	startAsString := note.Start.Format(dbDateLayout)
+	endAsString := note.End.Format(dbDateLayout)
+	_, err = stmt.Exec(note.Id, note.Text, startAsString, endAsString, note.Color, lifeId)
+	checkDbErr(err)
+	fmt.Println("added note to db")
+}
+
+func deleteNoteFromDb(note Note){
+	db := Db
+	stmt, err := db.Prepare("DELETE FROM note WHERE id = ?;")
+	checkDbErr(err)
+	_, err = stmt.Exec(note.Id)
+	checkDbErr(err)
+	fmt.Println("deleted note from db")
 }
 
 func checkDbErr(err error){

@@ -10,6 +10,8 @@ import (
 	"time"
 	"github.com/kjk/betterguid"
 	"html/template"
+	"net/url"
+	"errors"
 )
 
 type NoteBox struct{
@@ -86,8 +88,8 @@ func main() {
 	router.HandleFunc("/get_main_page_data", GetMainPageData).Methods("GET")
 	router.HandleFunc("/get_life", GetLife).Methods("GET")
 	router.HandleFunc("/change_note", ChangeNote).Methods("POST")
-	router.HandleFunc("/add_note", AddNote).Methods("POST")
-	router.HandleFunc("/delete_note", DeleteNote).Methods("POST")
+	router.HandleFunc("/add_note", HandleAddNote).Methods("POST")
+	router.HandleFunc("/delete_note", HandleDeleteNote).Methods("POST")
 	router.HandleFunc("/change_options", ChangeLcOptions).Methods("PUT")
 	router.HandleFunc("/people", GetPeople).Methods("GET")
 	router.HandleFunc("/people/{id}", GetPerson).Methods("GET")
@@ -221,59 +223,81 @@ func ChangeNote(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(getLcMainPageVariables())
 }
 
-func AddNote(w http.ResponseWriter, r *http.Request){
+func HandleAddNote(w http.ResponseWriter, r *http.Request){
 	r.ParseForm()
 	fmt.Println(r.Form)
-	noteText := r.Form["note-text"][0]
-	if noteText == ""{
-		log.Println("empty note text, not allow'd!")
-		http.Error(w, "Note text can't be empty.", 500);
+	newNote, err := createNoteFromForm(r.Form)
+	if err != nil{
+		http.Error(w, err.Error(), 500);
 		return
 	}
-	colorHexString := r.Form["note-color"][0] // TODO: validointi?
-	startDate, err1 := time.Parse(yyMMddLayout, r.Form["note-start"][0])
-	endDate, err2 := time.Parse(yyMMddLayout, r.Form["note-end"][0])
-	if err1 != nil || err2 != nil{
-		log.Println("parse error")
-		http.Error(w, "Unparsable date.", 500);
-		return
-	}
-
-	if endDate.Before(startDate) || endDate.Equal(startDate){
-		log.Println("erroneous date values")
-		http.Error(w, "End date not after start date.", 500);
-		return
-	}
-	note := Note{noteText, startDate, endDate, colorHexString, betterguid.New()}
-	TheLife.addNote(&note)
-	fmt.Println("note added with id: ", note.Id)
+	TheLife.addNote(&newNote)
+	fmt.Println("note added with id: ", newNote.Id)
 	json.NewEncoder(w).Encode(getLcMainPageVariables())
+
+	addNoteToDb(newNote)
 }
 
-func DeleteNote(w http.ResponseWriter, r *http.Request){
+func HandleDeleteNote(w http.ResponseWriter, r *http.Request){
 	fmt.Println("DeleteNote called")
 	r.ParseForm()
 	fmt.Println(r.Form)
-	noteId := r.Form["id"][0]
-	var note *Note
-	if TheLife.doesNoteExist(noteId){
-		note = TheLife.getNoteById(noteId)
-	}else{
-		log.Println("note id of ", noteId, "doesn't exist")
-		http.Error(w, "No valid note selected.", 500)
+	note, err := getExistingNoteFromForm(r.Form)
+	if err != nil{
+		http.Error(w, err.Error(), 500)
 		return
 	}
 	fmt.Println("Trying to delete note")
 	TheLife.deleteNote(note)
 	fmt.Println("note deletion done")
 	json.NewEncoder(w).Encode(getLcMainPageVariables())
+
+	deleteNoteFromDb(*note)
 }
 
+func createNoteFromForm(form url.Values) (Note, error) {
+	noteText := form["note-text"][0]
+	if noteText == ""{
+		log.Println("empty note text, not allow'd!")
+		return Note{}, errors.New("Note text can't be empty.")
+	}
+	colorHexString := form["note-color"][0] // TODO: validointi?
+	startDate, err1 := time.Parse(yyMMddLayout, form["note-start"][0])
+	endDate, err2 := time.Parse(yyMMddLayout, form["note-end"][0])
+	if err1 != nil || err2 != nil{
+		log.Println("parse error")
+		return Note{}, errors.New("Unparsable date.")
+	}
 
+	if endDate.Before(startDate) || endDate.Equal(startDate){
+		log.Println("erroneous date values")
+		return Note{}, errors.New("End date not after start date.")
+	}
+	note := Note{noteText, startDate, endDate, colorHexString, betterguid.New()}
+	return note, nil
+}
+
+func getExistingNoteFromForm(form url.Values) (*Note, error){
+	noteId := form["id"][0]
+	var note *Note
+	if TheLife.doesNoteExist(noteId){
+		note = TheLife.getNoteById(noteId)
+	}else{
+		log.Println("note id of ", noteId, "doesn't exist")
+		return &Note{}, errors.New("No valid note selected.")
+	}
+	return note, nil
+}
 
 func getLcMainPageVariables() LcMainPageVariables{
 	return LcMainPageVariables{getStringFromTimeUnit(ResolutionUnit), timeUnitStrings, TheLife}
 }
+
+
+
+
+
+
 
 
 func GetPeople(w http.ResponseWriter, r *http.Request) {
