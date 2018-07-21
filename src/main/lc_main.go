@@ -87,7 +87,7 @@ func main() {
 	router.HandleFunc("/", GetMainPage).Methods("GET")
 	router.HandleFunc("/get_main_page_data", GetMainPageData).Methods("GET")
 	router.HandleFunc("/get_life", GetLife).Methods("GET")
-	router.HandleFunc("/change_note", ChangeNote).Methods("POST")
+	router.HandleFunc("/change_note", HandleChangeNote).Methods("POST")
 	router.HandleFunc("/add_note", HandleAddNote).Methods("POST")
 	router.HandleFunc("/delete_note", HandleDeleteNote).Methods("POST")
 	router.HandleFunc("/change_options", ChangeLcOptions).Methods("PUT")
@@ -185,42 +185,23 @@ func ChangeLcOptions(w http.ResponseWriter, r *http.Request){
 	json.NewEncoder(w).Encode(getLcMainPageVariables())
 }
 
-func ChangeNote(w http.ResponseWriter, r *http.Request) {
+func HandleChangeNote(w http.ResponseWriter, r *http.Request){
 	r.ParseForm()
 	fmt.Println(r.Form)
-	noteId := r.Form["id"][0]
-	var note *Note
-	if TheLife.doesNoteExist(noteId){
-		note = TheLife.getNoteById(noteId)
-	}else{
-		log.Println("note id of ", noteId, "doesn't exist")
-		http.Error(w, "No valid note selected.", 500)
+	note, err := getExistingNoteFromForm(r.Form)
+	if err != nil{
+		http.Error(w, err.Error(), 500)
 		return
 	}
-	fmt.Println("Trying to save note")
-	noteText := r.Form["text"][0]
-	if noteText == ""{
-		log.Println("empty note text, not allow'd!")
-		http.Error(w, "Note text can't be empty.", 500);
+	fmt.Println("updating note")
+	err = changeNoteAccordingToForm(note, r.Form)
+	if err != nil{
+		http.Error(w, err.Error(), 500)
 		return
 	}
-	colorHexString := r.Form["color"][0]
-	startDate, err1 := time.Parse(yyMMddLayout, r.Form["start-date"][0])
-	endDate, err2 := time.Parse(yyMMddLayout, r.Form["end-date"][0])
-	if err1 != nil || err2 != nil{
-		log.Println("parse error")
-		http.Error(w, "Unparsable date.", 500);
-	}
-	if endDate.Before(startDate) || endDate.Equal(startDate){
-		log.Println("erroneous date values")
-		http.Error(w, "End date not after start date.", 500)
-		return
-	}
-	note.Text = noteText
-	note.Color = colorHexString
-	note.Start = startDate
-	note.End = endDate
 	json.NewEncoder(w).Encode(getLcMainPageVariables())
+
+	updateNoteInDb(*note)
 }
 
 func HandleAddNote(w http.ResponseWriter, r *http.Request){
@@ -289,6 +270,30 @@ func getExistingNoteFromForm(form url.Values) (*Note, error){
 	return note, nil
 }
 
+func changeNoteAccordingToForm(note *Note, form url.Values) error {
+	noteText := form["text"][0]
+	if noteText == ""{
+		log.Println("empty note text, not allow'd!")
+		return errors.New("Note text can't be empty.")
+	}
+	colorHexString := form["color"][0]
+	startDate, err1 := time.Parse(yyMMddLayout, form["start-date"][0])
+	endDate, err2 := time.Parse(yyMMddLayout, form["end-date"][0])
+	if err1 != nil || err2 != nil{
+		log.Println("parse error")
+		return errors.New("Unparsable date.")
+	}
+	if endDate.Before(startDate) || endDate.Equal(startDate){
+		log.Println("erroneous date values")
+		return errors.New("End date not after start date.")
+	}
+	note.Text = noteText
+	note.Color = colorHexString
+	note.Start = startDate
+	note.End = endDate
+	return nil
+}
+
 func getLcMainPageVariables() LcMainPageVariables{
 	return LcMainPageVariables{getStringFromTimeUnit(ResolutionUnit), timeUnitStrings, TheLife}
 }
@@ -329,3 +334,42 @@ func DeletePerson(w http.ResponseWriter, r *http.Request) {
 	}
 	json.NewEncoder(w).Encode(people)
 }
+
+/*
+func ChangeNote(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	fmt.Println(r.Form)
+	noteId := r.Form["id"][0]
+	var note *Note
+	if TheLife.doesNoteExist(noteId){
+		note = TheLife.getNoteById(noteId)
+	}else{
+		log.Println("note id of ", noteId, "doesn't exist")
+		http.Error(w, "No valid note selected.", 500)
+		return
+	}
+	fmt.Println("Trying to save note")
+	noteText := r.Form["text"][0]
+	if noteText == ""{
+		log.Println("empty note text, not allow'd!")
+		http.Error(w, "Note text can't be empty.", 500);
+		return
+	}
+	colorHexString := r.Form["color"][0]
+	startDate, err1 := time.Parse(yyMMddLayout, r.Form["start-date"][0])
+	endDate, err2 := time.Parse(yyMMddLayout, r.Form["end-date"][0])
+	if err1 != nil || err2 != nil{
+		log.Println("parse error")
+		http.Error(w, "Unparsable date.", 500);
+	}
+	if endDate.Before(startDate) || endDate.Equal(startDate){
+		log.Println("erroneous date values")
+		http.Error(w, "End date not after start date.", 500)
+		return
+	}
+	note.Text = noteText
+	note.Color = colorHexString
+	note.Start = startDate
+	note.End = endDate
+	json.NewEncoder(w).Encode(getLcMainPageVariables())
+}*/

@@ -121,6 +121,17 @@ func deleteNoteFromDb(note Note){
 	fmt.Println("deleted note from db")
 }
 
+func updateNoteInDb(note Note){
+	db := Db
+	stmt, err := db.Prepare("UPDATE note SET text=?, start=?, end=?, color=? WHERE id=?;")
+	checkDbErr(err)
+	startAsString := note.Start.Format(dbDateLayout)
+	endAsString := note.End.Format(dbDateLayout)
+	_, err = stmt.Exec(note.Text, startAsString, endAsString, note.Color, note.Id)
+	checkDbErr(err)
+	fmt.Println("updated note in db")
+}
+
 func checkDbErr(err error){
 	if err != nil{
 		log.Println("Databse error:")
