@@ -132,6 +132,17 @@ func updateNoteInDb(note Note){
 	fmt.Println("updated note in db")
 }
 
+func updateLifeInDb(life Life){
+	db := Db
+	stmt, err := db.Prepare("UPDATE life SET start=?, end=? WHERE id=?;")
+	checkDbErr(err)
+	startAsString := life.Start.Format(dbDateLayout)
+	endAsString := life.End.Format(dbDateLayout)
+	_, err = stmt.Exec(startAsString, endAsString, lifeId)
+	checkDbErr(err)
+	fmt.Println("updated life in db")
+}
+
 func checkDbErr(err error){
 	if err != nil{
 		log.Println("Databse error:")

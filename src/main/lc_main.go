@@ -90,7 +90,7 @@ func main() {
 	router.HandleFunc("/change_note", HandleChangeNote).Methods("POST")
 	router.HandleFunc("/add_note", HandleAddNote).Methods("POST")
 	router.HandleFunc("/delete_note", HandleDeleteNote).Methods("POST")
-	router.HandleFunc("/change_options", ChangeLcOptions).Methods("PUT")
+	router.HandleFunc("/change_options", HandleChangeLcOptions).Methods("PUT")
 	router.HandleFunc("/people", GetPeople).Methods("GET")
 	router.HandleFunc("/people/{id}", GetPerson).Methods("GET")
 	router.HandleFunc("/people/{id}", CreatePerson).Methods("POST")
@@ -160,29 +160,17 @@ func GetMainPageData(w http.ResponseWriter, r *http.Request){
 	json.NewEncoder(w).Encode(getLcMainPageVariables());
 }
 
-func ChangeLcOptions(w http.ResponseWriter, r *http.Request){
+func HandleChangeLcOptions(w http.ResponseWriter, r *http.Request){
 	r.ParseForm()
 	fmt.Println(r.Form)
-	resolutionUnitString := r.Form["resolution-unit"][0]
-	lifeStart, err1 := time.Parse(yyMMddLayout, r.Form["life-start"][0])
-	lifeEnd, err2 := time.Parse(yyMMddLayout, r.Form["life-end"][0])
-	if err1 != nil || err2 != nil{
-		log.Println("parse error")
-		http.Error(w, "Parse error.", 500);
+	err := changeLcOptions(r.Form)
+	if err != nil{
+		http.Error(w, err.Error(), 500)
 		return
 	}
-	if lifeEnd.Before(lifeStart) || lifeEnd.Equal(lifeStart){
-		log.Println("erroneous date values: erroneous chronology")
-		http.Error(w, "Start date must be before end date.", 500);
-		return
-	}
-
-	resolutionUnit := timeUnitFromString[resolutionUnitString] // TODO: entä jos on virheellinen stringi?
-	//fmt.Println("new resolution unit:", resolutionUnit)
-	ResolutionUnit = resolutionUnit
-	TheLife.Start = lifeStart
-	TheLife.End = lifeEnd
 	json.NewEncoder(w).Encode(getLcMainPageVariables())
+
+	updateLifeInDb(*TheLife)
 }
 
 func HandleChangeNote(w http.ResponseWriter, r *http.Request){
@@ -234,6 +222,29 @@ func HandleDeleteNote(w http.ResponseWriter, r *http.Request){
 	json.NewEncoder(w).Encode(getLcMainPageVariables())
 
 	deleteNoteFromDb(*note)
+}
+
+
+
+func changeLcOptions(form url.Values) error {
+	resolutionUnitString := form["resolution-unit"][0]
+	lifeStart, err1 := time.Parse(yyMMddLayout, form["life-start"][0])
+	lifeEnd, err2 := time.Parse(yyMMddLayout, form["life-end"][0])
+	if err1 != nil || err2 != nil{
+		log.Println("parse error")
+		return errors.New("parse error")
+	}
+	if lifeEnd.Before(lifeStart) || lifeEnd.Equal(lifeStart){
+		log.Println("erroneous date values: erroneous chronology")
+		return errors.New("start date must be before end date")
+	}
+
+	resolutionUnit := timeUnitFromString[resolutionUnitString] // TODO: entä jos on virheellinen stringi?
+	//fmt.Println("new resolution unit:", resolutionUnit)
+	ResolutionUnit = resolutionUnit
+	TheLife.Start = lifeStart
+	TheLife.End = lifeEnd
+	return nil
 }
 
 func createNoteFromForm(form url.Values) (Note, error) {
