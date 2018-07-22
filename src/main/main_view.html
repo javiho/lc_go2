@@ -15,19 +15,19 @@
         <div class="d-flex flex-wrap justify-content-between">
             <form id="lc-options-form" class="form-inline needs-validation" data-action="/change_options" data-method="put" novalidate>
                 <label for="resolution-unit-select">Select time unit:</label>
-                <select id="resolution-unit-select" class="form-control" name="resolution-unit" form="lc-options-form"
+                <select id="resolution-unit-select" class="form-control form-control-sm mr-sm-2" name="resolution-unit" form="lc-options-form"
                         data-default-selected="{{.ResolutionUnit}}">
                 {{range .AllResolutionUnits}}
                     <option value="{{.}}">{{.}}</option>
                 {{end}}
                 </select>
                 <label for="life-start-input">Birth date:</label>
-                <input id="life-start-input" class="form-control" name="life-start" type="date" value="(empty)" required>
+                <input id="life-start-input" class="form-control form-control-sm mr-sm-2" name="life-start" type="date" value="(empty)" required>
                 <span class="invalid-feedback">Can't handle this date, my dude...</span>
                 <label for="life-end-input">Estimated death date:</label>
-                <input id="life-end-input" class="form-control" name="life-end" type="date" value="(empty)" required>
+                <input id="life-end-input" class="form-control form-control-sm mr-sm-2" name="life-end" type="date" value="(empty)" required>
                 <span class="invalid-feedback">Can't handle this date, my dude...</span>
-                <input type="submit" class="button" value="Save">
+                <button type="submit" class="btn btn-primary">Save</button>
             </form>
             <div id="calendar-controls-div">
                 <button id="show-time-coloring-button" class="btn" type="button">Time coloring</button>
