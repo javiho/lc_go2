@@ -346,6 +346,7 @@ function timeBoxClicked(e, multiSelectionOn = false){
         clearNoteChangingForm();
     }else{
         populateNoteChangingForm(notesInTimeBox[0]);
+        showNoteChangingFormDiv();
     }
     console.log("timeBoxClicked took", performance.now() - fsTime);
 }
@@ -358,6 +359,12 @@ function noteRepClicked(jQuery){
     const note = lifeService.getNoteById(id, life);
     console.assert(note !== undefined, "Note is undefined.");
     populateNoteChangingForm(note);
+    showNoteChangingFormDiv();
+}
+
+function showNoteChangingFormDiv(){
+    $('#note-changing-form-div').removeClass("collapse");
+    $('#note-changing-form-div').addClass("show");
 }
 
 function possiblyClearNoteChangingAndDeletionForm(){

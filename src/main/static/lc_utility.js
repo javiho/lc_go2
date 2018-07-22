@@ -11,6 +11,7 @@ const zoomInButtonId = 'zoom-in-button';
 const zoomOutButtonId = 'zoom-out-button';
 const restoreDefaultZoomButtonId = 'restore-default-zoom-button';
 const showTimeColoringButtonId = "show-time-coloring-button";
+//const showNoteChangingDivButton = "show-note-changing-div-button";
 const selectedTimeBoxClass = 'selected-time-box';
 //const zoomStep = 10; //px
 const zoomMultiplier = 1.2;
