@@ -12,6 +12,7 @@ let lcOptionsForm;
 let selectedTimeBoxes = null; // jQuery object
 let visibleNotes = []; // Stores the Note objects of which are visible in the calendar.
 let zoomLevel = defaultZoomLevel; // Integers. Negatives are for zooming out.
+let pastFutureColoringEnabled = true;
 
 let lastClickedSaveDeleteSubmit = ""; // TODO: pitäisi keksiä parempi tapa?
 
@@ -126,6 +127,15 @@ function initialize(){
             zoomLifeCalendar();
             //$('.time-box').css('min-width', timeBoxDefaultWidth).css('max-width', timeBoxDefaultWidth);
             //$('.time-box').css('min-height', timeBoxDefaultHeight).css('max-height', timeBoxDefaultHeight);
+        }
+
+        if(eventTargetJQuery.attr('id') === showTimeColoringButtonId){
+            pastFutureColoringEnabled = !pastFutureColoringEnabled;
+            if(!pastFutureColoringEnabled){
+                clearUncertaintyGradientColoring();
+            }else{
+                updatePastFutureColoring();
+            }
         }
 
         if(eventTargetJQuery.is(".js-time-box")){
@@ -245,6 +255,13 @@ function updatePastFutureColoring(){
         }
         previousKeyAsNumber = keyAsNumber;
     }
+}
+
+function clearUncertaintyGradientColoring(){
+    $('#life-calendar .time-box').each(function(){
+        const tb = $(this);
+        tb.css({backgroundColor: ""});
+    });
 }
 
 /*
@@ -457,7 +474,9 @@ function updateLifeCalendar(){
     lifeCalendarElement.append(arrayAsJQuery);
     console.log("updateLifeCalendar: adding to DOM took", performance.now() - fsTime);
     //newTimeBoxElements.appendTo(lifeCalendarElement);
-    updatePastFutureColoring();
+    if(pastFutureColoringEnabled){
+        updatePastFutureColoring();
+    }
 }
 
 function updateNotesDiv(){
