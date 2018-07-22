@@ -19,61 +19,7 @@ function initialize(){
     console.log("initializing");
     lcOptionsForm = $('#lc-options-form');
     // is-valid ja is-invalid -luokat näyttävät feedbackin ja punaiset reunat!
-    lcOptionsForm.submit(function(e){
-        console.log("form inputs:");
-        console.log(lcOptionsForm.children("input, select"));
-        lcOptionsForm.children("input, select").each(function(){
-            const isValid = $(this)[0].checkValidity(); // onko html-validaation mukaan validi?
-            if(!isValid){
-                $(this).addClass(isInvalidClass);
-            }
-        });
-        const startInput = $('#life-start-input');
-        const endInput = $('#life-end-input');
-        let startInputValue = moment.utc(startInput.val());
-        let endInputValue = moment.utc(endInput.val());
-        let isStartValid = startInputValue.isSameOrAfter(MIN_DATE) && startInputValue.isBefore(MAX_DATE);
-        let isEndValid = endInputValue.isSameOrAfter(MIN_DATE) && endInputValue.isBefore(MAX_DATE);
-        if(!isStartValid){
-            startInput.addClass(isInvalidClass);
-            startInput.next().text("Date out of range");
-        }
-        if(!isEndValid){
-            endInput.addClass(isInvalidClass);
-            endInput.next().text("Date out of range");
-        }
-        console.log("start input value:");
-        console.log(endInputValue);
-        if(!endInputValue.isAfter(startInputValue)){
-            startInput.addClass(isInvalidClass);
-            endInput.addClass(isInvalidClass);
-            console.log("invalid classes add'd!");
-            startInput.add(endInput).next().text("Erroneous chronology");
-        }
-        let isAnyInvalid = false;
-        lcOptionsForm.children("input, select").each(function(){
-            console.log("loopung");
-            if($(this).hasClass(isInvalidClass)){
-                isAnyInvalid = true;
-                console.log("is invalid");
-            }
-        });
-        if(!isAnyInvalid) {
-            $.ajax($(this).attr("data-action"),
-                {
-                    data: $(this).serialize(),
-                    method: $(this).attr("data-method"),
-                    error: function (jqXHR, textStatus, errorThrown) {
-                        alert("error'd: " + errorThrown);
-                    },
-                    success: function (data, textStatus, jqXHR) {
-                        console.log("This is what I got: " + data);
-                        glueMainPageData(JSON.parse(data));
-                    }
-                });
-        }
-        e.preventDefault();
-    });
+    lcOptionsForm.submit(handleLcOptionsFormSubmit);
 
     $('#note-changing-submit').click(function(){
         lastClickedSaveDeleteSubmit = "save";
@@ -193,6 +139,74 @@ function initialize(){
     });
 
     $.getJSON("/get_main_page_data", glueMainPageData);
+}
+
+function handleLcOptionsFormSubmit(e){
+    console.log("form inputs:");
+    console.log(lcOptionsForm.children("input, select"));
+
+    lcOptionsForm.children("input, select").each(function(){
+        if($(this).hasClass(isInvalidClass)){
+            $(this).removeClass(isInvalidClass);
+            console.log("handleLcOptionsFormSubmit: was invalid, but not anymore");
+        }
+    });
+
+    // Basic HTML browser provided validation
+    lcOptionsForm.children("input, select").each(function(){
+        const isValid = $(this)[0].checkValidity(); // onko html-validaation mukaan validi?
+        if(!isValid){
+            $(this).addClass(isInvalidClass);
+        }
+    });
+
+    // Business logic based validation
+    const startInput = $('#life-start-input');
+    const endInput = $('#life-end-input');
+    let startInputValue = moment.utc(startInput.val());
+    let endInputValue = moment.utc(endInput.val());
+    let isStartValid = startInputValue.isSameOrAfter(MIN_DATE) && startInputValue.isBefore(MAX_DATE);
+    let isEndValid = endInputValue.isSameOrAfter(MIN_DATE) && endInputValue.isBefore(MAX_DATE);
+    if(!isStartValid){
+        startInput.addClass(isInvalidClass);
+        startInput.next().text("Date out of range");
+    }
+    if(!isEndValid){
+        endInput.addClass(isInvalidClass);
+        endInput.next().text("Date out of range");
+    }
+    console.log("end input value:");
+    console.log(endInputValue);
+    if(!endInputValue.isAfter(startInputValue)){
+        startInput.addClass(isInvalidClass);
+        endInput.addClass(isInvalidClass);
+        console.log("invalid classes add'd!");
+        startInput.add(endInput).next().text("Erroneous chronology");
+    }
+
+    // Act according to valid or invalid input
+    let isAnyInvalid = false;
+    lcOptionsForm.children("input, select").each(function(){
+        if($(this).hasClass(isInvalidClass)){
+            isAnyInvalid = true;
+            console.log("is invalid");
+        }
+    });
+    if(!isAnyInvalid) {
+        $.ajax($(this).attr("data-action"),
+            {
+                data: $(this).serialize(),
+                method: $(this).attr("data-method"),
+                error: function (jqXHR, textStatus, errorThrown) {
+                    alert("error'd: " + errorThrown);
+                },
+                success: function (data, textStatus, jqXHR) {
+                    console.log("This is what I got: " + data);
+                    glueMainPageData(JSON.parse(data));
+                }
+            });
+    }
+    e.preventDefault();
 }
 
 /*
