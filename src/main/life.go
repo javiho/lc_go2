@@ -45,6 +45,7 @@ const(
 
 const yyMMddLayout = "2006-01-02"
 const dbDateLayout = "2006-01-02 15:04:05.000"
+const defaultNoteText = "(Unnamed note)"
 
 type Life struct{
 	Start time.Time

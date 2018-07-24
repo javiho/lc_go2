@@ -250,8 +250,10 @@ func changeLcOptions(form url.Values) error {
 func createNoteFromForm(form url.Values) (Note, error) {
 	noteText := form["note-text"][0]
 	if noteText == ""{
-		log.Println("empty note text, not allow'd!")
-		return Note{}, errors.New("Note text can't be empty.")
+		//log.Println("empty note text, not allow'd!")
+		//return Note{}, errors.New("Note text can't be empty.")
+		fmt.Println("empty note text, replacing with ", defaultNoteText)
+		noteText = defaultNoteText
 	}
 	colorHexString := form["note-color"][0] // TODO: validointi?
 	startDate, err1 := time.Parse(yyMMddLayout, form["note-start"][0])
@@ -284,8 +286,10 @@ func getExistingNoteFromForm(form url.Values) (*Note, error){
 func changeNoteAccordingToForm(note *Note, form url.Values) error {
 	noteText := form["text"][0]
 	if noteText == ""{
-		log.Println("empty note text, not allow'd!")
-		return errors.New("Note text can't be empty.")
+		//log.Println("empty note text, not allow'd!")
+		//return errors.New("Note text can't be empty.")
+		fmt.Println("empty note text, replacing with ", defaultNoteText)
+		noteText = defaultNoteText
 	}
 	colorHexString := form["color"][0]
 	startDate, err1 := time.Parse(yyMMddLayout, form["start-date"][0])
