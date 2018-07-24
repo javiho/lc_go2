@@ -69,6 +69,10 @@ function initialize(){
         e.preventDefault();
     });
 
+    $('#resolution-unit-select').change(function(){
+        $(this).closest("form").submit();
+    });
+
     $(document).click(function(e){
         const eventTargetJQuery = $(e.target);
         //console.log("eventTarget:", eventTargetJQuery);
