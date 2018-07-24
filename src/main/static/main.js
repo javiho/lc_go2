@@ -22,10 +22,10 @@ function initialize(){
     // is-valid ja is-invalid -luokat näyttävät feedbackin ja punaiset reunat!
     lcOptionsForm.submit(handleLcOptionsFormSubmit);
 
-    $('#note-changing-submit').click(function(){
+    $('#note-changing-submit-button').click(function(){
         lastClickedSaveDeleteSubmit = "save";
     });
-    $('#note-deleting-submit').click(function(){
+    $('#note-deleting-submit-button').click(function(){
         lastClickedSaveDeleteSubmit = "delete";
     });
     // TODO: miten voi tehdä niin, että voi lähettää samasta formista sekä delete että change requestin eri napeilla?

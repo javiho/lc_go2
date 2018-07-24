@@ -14,7 +14,7 @@
     <div class="col-10">
         <div class="d-flex flex-wrap justify-content-between">
             <form id="lc-options-form" class="form-inline needs-validation" data-action="/change_options" data-method="put" novalidate>
-                <label for="resolution-unit-select">Select time unit:</label>
+                <label for="resolution-unit-select">Time unit:</label>
                 <select id="resolution-unit-select" class="form-control form-control-sm mr-sm-2" name="resolution-unit" form="lc-options-form"
                         data-default-selected="{{.ResolutionUnit}}">
                 {{range .AllResolutionUnits}}
@@ -23,10 +23,10 @@
                 </select>
                 <label for="life-start-input">Birth date:</label>
                 <input id="life-start-input" class="form-control form-control-sm mr-sm-2" name="life-start" type="date" value="(empty)" required>
-                <span class="invalid-feedback">Can't handle this date, my dude...</span>
+                <span class="invalid-feedback">Can't handle this date</span>
                 <label for="life-end-input">Estimated death date:</label>
                 <input id="life-end-input" class="form-control form-control-sm mr-sm-2" name="life-end" type="date" value="(empty)" required>
-                <span class="invalid-feedback">Can't handle this date, my dude...</span>
+                <span class="invalid-feedback">Can't handle this date</span>
                 <button type="submit" class="btn btn-primary">Save</button>
             </form>
             <div id="calendar-controls-div">
@@ -82,8 +82,10 @@
                         <input type="color" id="note-changing-color-input" name="color" value="#AAAAAA">
                     </div>
                     <input id="note-changing-id" type="text" name="id" hidden>
-                    <input id="note-changing-submit" type="submit" class="button" value="Save"></input>
-                    <input id="note-deleting-submit" type="submit" class="button" value="Delete"></input>
+                    <!--<input id="note-changing-submit" type="submit" class="button" value="Save"></input>-->
+                    <button id="note-changing-submit-button" type="submit" class="btn btn-primary">Save</button>
+                    <button id="note-deleting-submit-button" type="submit" class="btn btn-primary">Delete</button>
+                    <!--<input id="note-deleting-submit" type="submit" class="button" value="Delete"></input>-->
                     <!--<input type="submit" name="save-submit" class="button" value="Save"></input>-->
                     <!--<input type="submit" name="delete-submit" class="button" value="Delete"></input>-->
                 </form>
@@ -118,7 +120,8 @@
                         <label for="new-note-end">End</label>
                         <input class="form-control form-control-sm" type="date" id="new-note-end" name="note-end" value="(None selected)">
                     </div>
-                    <input type="submit" value="Create">
+                    <button type="submit" class="btn btn-primary">Create</button>
+                    <!--<input type="submit" value="Create">-->
                 </form>
             </div>
         </div>
