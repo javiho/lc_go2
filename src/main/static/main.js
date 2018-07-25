@@ -520,15 +520,19 @@ function updateNotesDiv(){
 
 
     const notes = lifeService.getNotesInTimeBoxesInterval(timeBoxes, life);
-    //console.log("updateNotesDiv: notes:", notes);
-    const noteRepElement = $('#template-storage-div .js-note-rep');
-    notes.forEach(function(note){
-        const newNoteRepElement = noteRepElement.clone();
-        newNoteRepElement.attr('data-note-id', note.Id);
-        newNoteRepElement.text(note.Text);
-        newNoteRepElement.css('background-color', note.Color);
-        contentsOfTimeBoxDiv.append(newNoteRepElement);
-    });
+    console.log("updateNotesDiv: notes:", notes);
+    if(notes.length === 0){
+        contentsOfTimeBoxDiv.text(noNoteSelectedString);
+    }else {
+        const noteRepElement = $('#template-storage-div .js-note-rep');
+        notes.forEach(function (note) {
+            const newNoteRepElement = noteRepElement.clone();
+            newNoteRepElement.attr('data-note-id', note.Id);
+            newNoteRepElement.text(note.Text);
+            newNoteRepElement.css('background-color', note.Color);
+            contentsOfTimeBoxDiv.append(newNoteRepElement);
+        });
+    }
 }
 
 function updateNewNoteForm(){
