@@ -507,7 +507,7 @@ function updateNotesDiv(){
     const intervalStartString = startDataAttribute;
     const intervalEndString = endDataAttribute;
     const intervalString = intervalStartString + " to " + intervalEndString;
-    intervalSpan.text(intervalString);
+    intervalSpan.text("Interval " + intervalString + ". ");
 
     const intervalAgeSpan = $('#selected-time-box-interval-age-span');
     const intervalStartMoment = moment.utc(startDataAttribute);
@@ -516,7 +516,7 @@ function updateNotesDiv(){
     const intervalEndAgeComponents = lcUtil.getAgeAsDateComponents(life.Start, intervalEndMoment);
     const intervalAgeText = `${intervalStartAgeComponents.years}y ${intervalStartAgeComponents.months}m to ` +
             `${intervalEndAgeComponents.years}y ${intervalEndAgeComponents.months}m`;
-    intervalAgeSpan.text(intervalAgeText);
+    intervalAgeSpan.text("Age: " + intervalAgeText + ".");
 
 
     const notes = lifeService.getNotesInTimeBoxesInterval(timeBoxes, life);
