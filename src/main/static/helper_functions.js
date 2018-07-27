@@ -44,4 +44,23 @@ const lcHelpers = {};
         return asMoment;
     };
 
+
+    /*
+        Pre-condition: parameters are jQuery objects. collapseButton contains icon as img element.
+     */
+    context.addCollapseIconBehavior = function(collapsingElement, collapseButton){
+        const topIconSource = "/static/open-iconic/svg/chevron-top.svg";
+        const bottomIconSource = "/static/open-iconic/svg/chevron-bottom.svg";
+        const icon = collapseButton.find('img');
+        console.assert(icon.length === 1);
+        collapsingElement.on('shown.bs.collapse', function(e){
+            icon.attr('src', topIconSource);
+            e.stopPropagation(); // Without this the parent element of collapsingElement has it's event handler called too.
+        });
+        collapsingElement.on('hidden.bs.collapse', function(e){
+            icon.attr('src', bottomIconSource);
+            e.stopPropagation(); // Without this the parent element of collapsingElement has it's event handler called too.
+        });
+    };
+
 })(lcHelpers);

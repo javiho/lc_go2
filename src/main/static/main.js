@@ -72,6 +72,10 @@ function initialize(){
     $('#resolution-unit-select').change(function(){
         $(this).closest("form").submit();
     });
+    
+    lcHelpers.addCollapseIconBehavior( $('#notes-control-panel'), $('#toggle-side-bar-button') );
+    lcHelpers.addCollapseIconBehavior( $('#note-changing-form-div'), $('#show-note-changing-div-button') );
+    lcHelpers.addCollapseIconBehavior( $('#new-note-form-div'), $('#show-new-note-form-div-button') );
 
     $(document).click(function(e){
         const eventTargetJQuery = $(e.target);

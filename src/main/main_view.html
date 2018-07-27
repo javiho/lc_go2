@@ -40,7 +40,12 @@
         </div>
     </div>
     <div class="col-2">
-        <button class="btn" type="button" data-toggle="collapse" data-target="#notes-control-panel">Show side bar</button>
+        <!--Side bar
+        <img class="small-icon" src="/static/open-iconic/svg/chevron-bottom.svg" alt="expand sidebar icon">-->
+        <button id="toggle-side-bar-button" class="btn btn-block text-left" type="button" data-toggle="collapse" data-target="#notes-control-panel">
+            Side bar
+            <img id="toggle-side-bar-icon" class="small-icon float-right" src="/static/open-iconic/svg/chevron-top.svg" alt="toggle sidebar icon">
+        </button>
     </div>
 </div>
 <div class="row">
@@ -63,7 +68,10 @@
             </div>
         </div>
         <div id="note-changing-div" class="border rounded p-1">
-            <button id="show-note-changing-div-button" class="btn" type="button" data-toggle="collapse" data-target="#note-changing-form-div">Selected note</button>
+            <button id="show-note-changing-div-button" class="btn btn-block text-left" type="button" data-toggle="collapse" data-target="#note-changing-form-div">
+                Selected note
+                <img class="small-icon float-right" src="/static/open-iconic/svg/chevron-bottom.svg" alt="toggle form visibility icon">
+            </button>
             <div id="note-changing-form-div" class="collapse">
                 <form id="note-changing-form" data-action="unused-attribute-for-now" data-method="unused-attribute-for-now">
                     <div class="form-group">
@@ -101,9 +109,11 @@
         </div>
 
         <div id="new-note-form-wrapper-div" class="border rounded p-1">
-            <button class="btn" type="button" data-toggle="collapse" data-target="#new-note-form-div">Create new note</button>
+            <button id="show-new-note-form-div-button" class="btn btn-block text-left" type="button" data-toggle="collapse" data-target="#new-note-form-div">
+                New note
+                <img class="small-icon float-right" src="/static/open-iconic/svg/chevron-bottom.svg" alt="toggle form visibility icon">
+            </button>
             <div id="new-note-form-div" class="collapse">
-
                 <form id="new-note-form" data-action="/add_note" data-method="post">
                     <div class="form-group">
                         <label for="new-note-text">Text</label>
