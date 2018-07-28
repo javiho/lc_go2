@@ -72,7 +72,7 @@ function initialize(){
     $('#resolution-unit-select').change(function(){
         $(this).closest("form").submit();
     });
-    
+
     lcHelpers.addCollapseIconBehavior( $('#notes-control-panel'), $('#toggle-side-bar-button') );
     lcHelpers.addCollapseIconBehavior( $('#note-changing-form-div'), $('#show-note-changing-div-button') );
     lcHelpers.addCollapseIconBehavior( $('#new-note-form-div'), $('#show-new-note-form-div-button') );
@@ -561,7 +561,7 @@ function updateNoteVisibilitiesDiv() {
         const newNoteVisibilityItem = originalJsNoteVisibilityItem.clone();
         const inputDomId = lcUtil.generateUniqueId();
         newNoteVisibilityItem.find('input').attr('id', inputDomId);
-        newNoteVisibilityItem.find('label').attr('for', inputDomId);
+        //newNoteVisibilityItem.find('label').attr('for', inputDomId); If this if uncommented, clicking label checks the checkbox.
 
         newNoteVisibilityItem.attr('data-note-id', note.Id);
         newNoteVisibilityItem.find('input').val(note.Id); // tämä lähetetään submitatessa (jos submitataan): name=value
