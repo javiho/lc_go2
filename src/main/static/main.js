@@ -241,10 +241,10 @@ function updatePastFutureColoring(){
     const lifeStartMs = life.Start.valueOf();
     const uncertaintyStart = lifeService.computeLifetimeUncertaintyStart(lifeStartMs, lifeEndMs);
 
-    let previousKeyAsNumber = 0;
+    let previousKeyAsNumber = Number.MIN_SAFE_INTEGER;
     for(let key of timeBoxEndTimes.keys()){
         const keyAsNumber = Number(key);
-        console.assert(previousKeyAsNumber < keyAsNumber, "Keys are not in ascending order.");
+        console.assert(previousKeyAsNumber <= keyAsNumber, "Keys are not in ascending order:", previousKeyAsNumber, keyAsNumber);
         const tb = timeBoxEndTimes.get(key);
         if( keyAsNumber > now ){
             tb.removeClass('past-colored');
@@ -283,13 +283,31 @@ function getTimeBoxesByStartAndEnd(){
     $('#life-calendar .time-box').each(function(){
         const tb = $(this);
         const startMs = lcHelpers.dataAttrToEpoch(tb, 'data-start');
-        const startMsString = startMs.toString();
+        timeBoxStartTimes.set(startMs, tb);
         const endMs = lcHelpers.dataAttrToEpoch(tb, 'data-end');
-        const endMsString = endMs.toString();
-        timeBoxStartTimes.set(startMsString, tb);
-        timeBoxEndTimes.set(endMsString, tb);
+        timeBoxEndTimes.set(endMs, tb);
+
     });
-    return {"startTimes": timeBoxStartTimes, "endTimes": timeBoxEndTimes};
+    let previousSt = Number.MIN_SAFE_INTEGER;
+    for(let st of timeBoxStartTimes.keys()){
+
+        console.assert(st >= previousSt, "Start times not ordered:", previousSt, st, typeof previousSt, typeof st);
+        previousSt = st;
+    }
+    let previousEt = Number.MIN_SAFE_INTEGER;
+    for(let et of timeBoxEndTimes.keys()){
+        console.assert(et >= previousEt, "End times not ordered.");
+        previousEt = et;
+    }
+    const timeBoxStartTimeStrings = new Map(); // Keys will be strings, values will be same as before
+    const timeBoxEndTimeStrings = new Map();
+    for(let [key, value] of timeBoxStartTimes){
+        timeBoxStartTimeStrings.set(key.toString(), value);
+    }
+    for(let [key, value] of timeBoxEndTimes){
+        timeBoxEndTimeStrings.set(key.toString(), value);
+    }
+    return {"startTimes": timeBoxStartTimeStrings, "endTimes": timeBoxEndTimeStrings};
 }
 
 function zoomLifeCalendar(){

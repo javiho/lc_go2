@@ -45,6 +45,7 @@ const lifeService = {};
     };
 
     context.getNoteById = function(id, life){
+        console.assert(id !== undefined && life !== undefined);
         const firstNoteFound = life.Notes.find(n => n.Id === id);
         console.assert(firstNoteFound !== undefined, "Note of id " + id + " is undefined.");
         return firstNoteFound;
