@@ -97,6 +97,7 @@ function initialize(){
             // Note: Changing the value of an input element using JavaScript, using .val() for example, won't fire the event.
             let checked = eventTargetJQuery[0].checked;
             let noteId = eventTargetJQuery.parent().attr('data-note-id');
+            console.assert(noteId !== dataEmptyValue && noteId !== undefined, "Invalid note id:", noteId, "event target:", eventTargetJQuery);
             let note = lifeService.getNoteById(noteId, life);
             console.assert(note !== undefined, "Note of id " + noteId + " is undefined.");
             if(checked){
