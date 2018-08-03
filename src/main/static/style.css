@@ -1,3 +1,22 @@
+/*.side-bar-displaying-button-div{
+    padding: 2px;
+    background-color: lightblue;
+    border: solid 1px lightblue;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+#notes-control-panel{
+    box-shadow: 0px -8px lightblue;
+    background-color: lightblue;
+    border: solid 1px lightblue;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}*/
+
+/*#notes-control-panel{
+    box-shadow: 0px -26px 0px -15px buttonface;
+}*/
+
 .time-box{
     border: 1px solid black;
     padding: 2px;
@@ -43,7 +62,8 @@
 }
 
 #life-calendar{
-    border: 2px dashed red;
+    /*border: solid 2px black;
+    border-radius: 5px;*/
     max-height: 90vh;
     overflow-y: scroll;
 }
