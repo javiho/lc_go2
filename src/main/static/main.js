@@ -142,6 +142,7 @@ function initialize(){
             pastFutureColoringEnabled = !pastFutureColoringEnabled;
             if(!pastFutureColoringEnabled){
                 clearUncertaintyGradientColoring();
+                clearPastFutureColornig();
             }else{
                 updatePastFutureColoring();
             }
@@ -270,6 +271,16 @@ function clearUncertaintyGradientColoring(){
     $('#life-calendar .time-box').each(function(){
         const tb = $(this);
         tb.css({backgroundColor: ""});
+    });
+}
+
+/*
+    Clears past-colored and future-colored classes, but not the uncertainty gradient.
+*/
+function clearPastFutureColornig(){
+    $('#life-calendar .time-box').each(function(){
+        $(this).removeClass('past-colored');
+        $(this).removeClass('future-colored');
     });
 }
 
