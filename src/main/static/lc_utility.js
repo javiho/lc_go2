@@ -2,6 +2,8 @@
 
 const isoDateFormatString = "YYYY-MM-DD";
 const noNoteSelectedString = "(No note selected)";
+const noIntervalSelectedString = "(No interval selected)";
+const noNotesInIntervalString = "(No notes in selected interval)";
 const defaultColorHex = '#AAAAAA';
 const dataEmptyValue = '(empty)';
 const selectedTimeBoxRangeSelector = '.selected-time-box-range';

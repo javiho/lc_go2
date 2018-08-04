@@ -531,32 +531,45 @@ function updateNotesDiv(){
         //console.log("updateNotesDiv: timeBoxes was null. returning");
         return;
     }
+    let isAnyTimeBoxSelected = true;
+    if(timeBoxes.length === 0){
+        console.log("0 selected time boxes. just saying...");
+        isAnyTimeBoxSelected = false;
+    }
     console.assert(timeBoxes !== undefined, "Bug.");
     const contentsOfTimeBoxDiv = $('#contents-of-time-box-div');
     contentsOfTimeBoxDiv.empty();
+
     const intervalSpan = $('#selected-time-box-interval-span');
     const startDataAttribute = selectedTimeBoxes.first().attr('data-start');
     const endDataAttribute = selectedTimeBoxes.last().attr('data-end');
-
-    const intervalStartString = startDataAttribute;
-    const intervalEndString = endDataAttribute;
-    const intervalString = intervalStartString + " to " + intervalEndString;
-    intervalSpan.text("Interval " + intervalString + ". ");
+    if(isAnyTimeBoxSelected) {
+        const intervalStartString = startDataAttribute;
+        const intervalEndString = endDataAttribute;
+        const intervalString = intervalStartString + " to " + intervalEndString;
+        intervalSpan.text("Interval " + intervalString + ". ");
+    }else{
+        intervalSpan.text(noIntervalSelectedString);
+    }
 
     const intervalAgeSpan = $('#selected-time-box-interval-age-span');
-    const intervalStartMoment = moment.utc(startDataAttribute);
-    const intervalEndMoment = moment.utc(endDataAttribute);
-    const intervalStartAgeComponents = lcUtil.getAgeAsDateComponents(life.Start, intervalStartMoment);
-    const intervalEndAgeComponents = lcUtil.getAgeAsDateComponents(life.Start, intervalEndMoment);
-    const intervalAgeText = `${intervalStartAgeComponents.years}y ${intervalStartAgeComponents.months}m to ` +
+    if(isAnyTimeBoxSelected) {
+        const intervalStartMoment = moment.utc(startDataAttribute);
+        const intervalEndMoment = moment.utc(endDataAttribute);
+        const intervalStartAgeComponents = lcUtil.getAgeAsDateComponents(life.Start, intervalStartMoment);
+        const intervalEndAgeComponents = lcUtil.getAgeAsDateComponents(life.Start, intervalEndMoment);
+        const intervalAgeText = `${intervalStartAgeComponents.years}y ${intervalStartAgeComponents.months}m to ` +
             `${intervalEndAgeComponents.years}y ${intervalEndAgeComponents.months}m`;
-    intervalAgeSpan.text("Age: " + intervalAgeText + ".");
+        intervalAgeSpan.text("Age: " + intervalAgeText + ".");
+    }else{
+        intervalAgeSpan.text("");
+    }
 
 
     const notes = lifeService.getNotesInTimeBoxesInterval(timeBoxes, life);
     console.log("updateNotesDiv: notes:", notes);
     if(notes.length === 0){
-        contentsOfTimeBoxDiv.text(noNoteSelectedString);
+        contentsOfTimeBoxDiv.text(noNotesInIntervalString);
     }else {
         const noteRepElement = $('#template-storage-div .js-note-rep');
         notes.forEach(function (note) {
