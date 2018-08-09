@@ -401,8 +401,9 @@ function noteRepClicked(jQuery){
 }
 
 function showNoteChangingFormDiv(){
-    $('#note-changing-form-div').removeClass("collapse");
-    $('#note-changing-form-div').addClass("show");
+    //$('#note-changing-form-div').removeClass("collapse");
+    //$('#note-changing-form-div').addClass("show");
+    $('#note-changing-form-div').collapse("show");
 }
 
 function possiblyClearNoteChangingAndDeletionForm(){
