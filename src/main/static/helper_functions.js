@@ -63,4 +63,36 @@ const lcHelpers = {};
         });
     };
 
+    context.rgbStringToNumbers = function(rgbString){
+        // TODO: elegantimpi tapa voisi olla
+        console.assert(rgbString !== undefined && rgbString !== "");
+        //console.log("rgbString:", rgbString);
+        const re = /,|\s|\(|\)/;
+        const splits = rgbString.split(re);
+        const numberStrings = [splits[1], splits[3], splits[5]];
+        const numbers = numberStrings.map(s => parseInt(s));
+        //console.log(numbers);
+        return numbers;
+    };
+
+    /*
+        Pre-condition: rgbArray is array of the three RGB numbers. All of them must be the same.
+     */
+    context.makeContrastingGrayColor = function(rgbArray){
+        console.log("rgbArray:", rgbArray);
+        console.assert(rgbArray[0] === rgbArray[1] && rgbArray[1] === rgbArray[2], "Not a grayscale color.");
+        const colorComponent = rgbArray[0];
+        const middlePoint = 255 / 2;
+        const contrastingColorComponent = colorComponent < middlePoint ? 255 : 0;
+        const contrastingColor = [contrastingColorComponent, contrastingColorComponent, contrastingColorComponent];
+        return contrastingColor;
+    };
+
+    /*
+        Pre-condition: rgbArray is array of the three RGB numbers.
+     */
+    context.rgbArrayToString = function(rgbArray){
+        return `rgb(${rgbArray[0]}, ${rgbArray[1]}, ${rgbArray[2]})`;
+    }
+
 })(lcHelpers);

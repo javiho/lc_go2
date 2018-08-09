@@ -18,7 +18,9 @@
 }*/
 
 .time-box{
+    box-sizing: content-box;
     border: 1px solid black;
+
     padding: 2px;
     min-width: 49px;
     max-width: 49px;
@@ -66,6 +68,8 @@
     border-radius: 5px;*/
     max-height: 90vh;
     overflow-y: scroll;
+
+    background-color: white;
 }
 
 .past-colored{
@@ -74,7 +78,7 @@
 }
 
 .future-colored{
-    background-color: #ffffff;
+    background-color: white;
 }
 
 footer{

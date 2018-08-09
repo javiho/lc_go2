@@ -683,6 +683,22 @@ function getTimeBoxesByInterval(start, end){
 }
 
 /*
+    TODO: Ei käytössä
+ */
+function setContrastingTimeBoxBorderColors(){
+    $('#life-calendar .time-box').each(function(){
+        const color = $(this).css("background-color");
+        //console.log("color:", color);
+        const asNumbers = lcHelpers.rgbStringToNumbers(color);
+        //console.log("asNumbers:", asNumbers);
+        console.assert(asNumbers.length === 3);
+        const contrastingColorNumbers = lcHelpers.makeContrastingGrayColor(asNumbers);
+        const borderColorCssValue = lcHelpers.rgbArrayToString(contrastingColorNumbers)
+        $(this).css( {borderColor: borderColorCssValue} );
+    });
+}
+
+/*
 function createMomentsFromDataAttrs(){
     stringsAndMoments = {};
     var counter = 0;
