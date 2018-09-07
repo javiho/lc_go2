@@ -91,6 +91,69 @@ const lcHelpers = {};
      */
     context.rgbArrayToString = function(rgbArray){
         return `rgb(${rgbArray[0]}, ${rgbArray[1]}, ${rgbArray[2]})`;
+    };
+
+    /*
+        Pre-condition: elements is a jQuery object.
+     */
+    context.flashElements = function(elements){
+        elements.fadeOut(100);
+    }
+
+    context.playCoolBorderAnimation = function(element){
+        /*element.animate({
+            borderRightWidth: 3,
+            borderBottomWidth: 3
+        }, 1000, function(){
+            element.animate({
+                borderRightWidth: 2,
+                borderBottomWidth: 2
+            }, 1000, function(){
+                console.log("completed adminautio!");
+                // Clear the changes to inline styles that this animation made.
+                element.css({
+                    borderRightWidth: "",
+                    borderBottomWidth: ""
+                });
+            });
+
+        });*/
+        element.animate({
+            borderWidth: 3,
+        }, 500, function(){
+            element.animate({
+                borderWidth: 2,
+            }, 500, function(){
+                // Clear the changes to inline styles that this animation made.
+                element.css({
+                    borderWidth: ""
+                });
+            });
+
+        });
+    };
+
+    /*
+        Pre-condition: jQueryObjectArray.length > 0. jQueryObjectArray is an array of jQuery objects.
+        TODO: eikö tosiaan muka ole mitään tehokkaampaa tapaa tehdä tätä? Tämä lienee aika hidas.
+     */
+    context.arrayToJQuery = function(jQueryObjectArray){
+        console.assert(jQueryObjectArray.length > 0);
+        /*let mergedJQuery = jQueryObjectArray[0];
+        if(jQueryObjectArray.length === 1){
+            return mergedJQuery;
+        }
+        for(let i = 1; i < jQueryObjectArray.length; i++){
+            mergedJQuery = mergedJQuery.add(jQueryObjectArray[i]);
+        }
+        return mergedJQuery;*/
+
+        // Adding one by one into a cumulative JQuery object would be first solution to come to mind, but it's slow.
+        const arrayOfRegularElements = jQueryObjectArray.map(function(jq){
+            return jq[0];
+        });
+        const mergedJQuery = $(arrayOfRegularElements);
+        return mergedJQuery;
     }
 
 })(lcHelpers);

@@ -6,6 +6,8 @@
     <title>Main View Title</title>
     <link rel="stylesheet" type="text/css" href="/static/style.css"/>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <!--<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">-->
+    <link rel="stylesheet" href="/static/selectables.css">
 </head>
 <body>
 <div class="container-fluid">
@@ -144,7 +146,7 @@
 <!-- This is storage area for "templates" which can be cloned elsewhere.
 TODO: ei ole kovin fiksu ratkaisu kun pitää esim valita elementtejä luokan perusteella. -->
 <div id="template-storage-div" hidden>
-    <div data-id="(empty)" class="time-box js-time-box d-flex flex-wrap" data-start="(empty)" data-end="(empty)">
+    <div data-id="(empty)" class="time-box js-time-box d-flex flex-wrap ui-widget-content" data-start="(empty)" data-end="(empty)">
         <!--<div class="time-box-interval-text tb-past-future-stripe js-past-future-coloring">
              Interval as presentable text, eg. 6/2018 - 7/2018 when the resolution unit is month.
         </div>-->
@@ -173,6 +175,16 @@ TODO: ei ole kovin fiksu ratkaisu kun pitää esim valita elementtejä luokan pe
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 <script src="http://malsup.github.com/jquery.form.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@simonwep/selection-js@0.0.11/dist/selection.min.js"></script>
+<!--<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script> -->
+<!--<script src="/static/selectables.js"></script>-->
+<!--<script src="https://code.jquery.com/jquery-1.12.4.min.js"
+        integrity="sha384-nvAa0+6Qg9clwYCGGPpDQLVpLNn0fRaROjHqs13t4Ggj3Ez50XnGQqc/r8MhnRDZ"
+        crossorigin="anonymous"></script>
+<script src="jquery.selectable.min.js"></script>-->
+<script src="https://thibaultjanbeyer.github.io/DragSelect/ds.min.js"></script>
+
+
 <script type='text/javascript' src="/static/moment.js"></script>
 <script type='text/javascript' src="/static/lc_utility.js"></script>
 <script type='text/javascript' src="/static/helper_functions.js"></script>
