@@ -6,7 +6,6 @@ $(document).ready(initialize);
 
 let life;
 let lcOptionsForm;
-//let selectablesObject = new Selectables({zone: '#life-calendar'});
 let dragSelect;
 
 //let stringsAndMoments = {}; // { "2018-01-01": moment.utc("2018-01-01"), etc. } // TODO: tämmöistä voi käyttää jos tarvitsee
@@ -19,11 +18,9 @@ let pastFutureColoringEnabled = true;
 let lastClickedSaveDeleteSubmit = ""; // TODO: pitäisi keksiä parempi tapa?
 let rangeSelectingInProgress = false;
 let rangeSelectingInitialTimeBox = null;
-//let selectablesWhileSelectionInProgress;// This contains the selected items when the selection is in progess TODO VAI TARKVIATTKNO???
 
 function initialize(){
     console.log("initializing");
-    //createCanvasOverlay("rgba(100, 100, 100, 0", $('#canvas-container')[0]); // $('#life-calendar')[0]
 
     // Disable text selection in time boxes.
     window.addEventListener('selectstart', function(e){
@@ -42,7 +39,6 @@ function initialize(){
         lastClickedSaveDeleteSubmit = "delete";
     });
     // TODO: miten voi tehdä niin, että voi lähettää samasta formista sekä delete että change requestin eri napeilla?
-    // TODO: TÄHÄN JÄÄTIIN - JÄÄTIINKÖ TOSIAAN?
     $('#note-changing-form').submit(function(e){
         let httpMethod;
         let formActionUrl;
@@ -86,42 +82,9 @@ function initialize(){
         $(this).closest("form").submit();
     });
 
-    $(document).dblclick(function(e){
-        const dblClicked = $(e.target);
-        console.log("dblClicked:", dblClicked);
-        if(dblClicked.hasClass("time-box")){
-            if(!rangeSelectingInProgress){
-                rangeSelectingInProgress = true;
-            }
-            if(rangeSelectingInitialTimeBox !== null){
-                rangeSelectingInitialTimeBox.removeClass(startRangeSelectionTimeBoxClass);
-            }
-            rangeSelectingInitialTimeBox = dblClicked;
-            dblClicked.addClass(startRangeSelectionTimeBoxClass);
-            //lcHelpers.flashElements($('#life-calendar .js-time-box'));
-            lcHelpers.playCoolBorderAnimation(dblClicked);
-        }
-        //timeBoxClicked(e, true);
-    });
-    /*document.addEventListener("dragstart", function(e){
-        const dragged = $(e.target);
-        //console.log("dragged:", dragged);
-        if(dragged.hasClass("time-box")){
-            dragged.addClass(dragstartTimeBoxClass);
-        }
-    });
-    document.addEventListener("dragend", function(e){
-        const dragged = $(e.target);
-        if(dragged.hasClass("time-box")){
-            dragged.addClass(dragendTimeBoxClass);
-        }
-    });*/
-
     lcHelpers.addCollapseIconBehavior( $('#notes-control-panel'), $('#toggle-side-bar-button') );
     lcHelpers.addCollapseIconBehavior( $('#note-changing-form-div'), $('#show-note-changing-div-button') );
     lcHelpers.addCollapseIconBehavior( $('#new-note-form-div'), $('#show-new-note-form-div-button') );
-
-    //initializeDragSelectObject();
 
     $(document).click(function(e){
         const eventTargetJQuery = $(e.target);
@@ -160,28 +123,16 @@ function initialize(){
             updateLifeCalendar();
         }
         if(eventTargetJQuery.attr('id') === zoomInButtonId){
-            //var minWidth = $(this).css('min-width');
-            //var maxWidth = $(this).css('max-width');
-            //$('.time-box').css('min-width', '+=' + zoomStep).css('max-width', '+=' + zoomStep);
-            //$('.time-box').css('min-height', '+=' + zoomStep).css('max-height', '+=' + zoomStep);
             zoomLevel += 1;
-            //var multiplierFunction = function(index, value){
-            //    return parseFloat(value) * zoomMultiplier;
-            //};
             zoomLifeCalendar()
         }
         if(eventTargetJQuery.attr('id') === zoomOutButtonId){
-            //var dividerFunction = function(index, value){
-            //    return parseFloat(value) * (1 / zoomMultiplier);
-            //};
             zoomLevel -= 1;
             zoomLifeCalendar();
         }
         if(eventTargetJQuery.attr('id') === restoreDefaultZoomButtonId){
             zoomLevel = defaultZoomLevel;
             zoomLifeCalendar();
-            //$('.time-box').css('min-width', timeBoxDefaultWidth).css('max-width', timeBoxDefaultWidth);
-            //$('.time-box').css('min-height', timeBoxDefaultHeight).css('max-height', timeBoxDefaultHeight);
         }
 
         if(eventTargetJQuery.attr('id') === showTimeColoringButtonId){
@@ -404,42 +355,6 @@ function glueMainPageData(data) {
     refreshDragSelectObject();
 }
 
-/*
-    This should only be called once. TODO: ei nyt käytössä
- */
-function initializeDragSelectObject(){
-    const selectables = document.getElementsByClassName('js-time-box');
-    console.assert(selectables.length > 0, "This is probably not supposed to happen.");
-    console.log("Selection area:", document.getElementById('life-calendar'));
-    dragSelect = new DragSelect({
-        selectables: selectables, // TODO: sisältää template storage arean elementin, ja tämä ongelma on myös refresh functiossa.
-        area: document.getElementById('life-calendar'),
-        onDragStart: function(elements){
-            console.log("selection started!");
-            //console.log("elements:", $(elements));
-        },
-        callback: function(elements){
-            console.log("selection ended!");
-            const elementsJQuery = $(elements);
-            console.log("elements:", elements.length);
-            if(elementsJQuery.length > 0) {
-                const earliestTb = getEarliestTimeBox($(elements));
-                const earliestTbStartTime = moment.utc(earliestTb.attr('data-start'));
-                const latestTb = getLatestTimeBox($(elements));
-                const latestTbStartTime = moment.utc(latestTb.attr('data-end'));
-                const tbsInInterval = getTimeBoxesByInterval(earliestTbStartTime, latestTbStartTime);
-                const tbsInIntervalJQuery = lcHelpers.arrayToJQuery(tbsInInterval);
-                console.log("tbsInInterval.length:", tbsInInterval.length);
-                console.log("tbsInIntervalJQuery.length:", tbsInIntervalJQuery.length);
-                selectTimeBoxes(tbsInIntervalJQuery, true);
-            }else{
-                clearTimeBoxSelection();
-            }
-        }
-    });
-    console.log("Total selectables in the beginning:", dragSelect.getSelectables().length);
-}
-
 function refreshDragSelectObject(){
     // TODO: nämä dragselectit jää hillumaan jonnekin - pitäisi jotenkin tuhota vanha kun uusi tehdään?
     /*const newSelectables = document.getElementsByClassName('js-time-box');
@@ -477,27 +392,6 @@ function refreshDragSelectObject(){
         }
     });
     console.log("Total selectables in the beginning:", dragSelect.getSelectables().length);
-    /*
-    selectablesObject = undefined;
-    selectablesObject = new Selectables({
-        elements: '.js-time-box', zone: '#life-calendar',
-        start: function(e){
-            console.log("selection started");
-        },
-        onSelect: function (element) {
-            console.log("element selected!");
-            console.assert(selectedTimeBoxes !== undefined);
-            if(selectedTimeBoxes === null){
-                selectedTimeBoxes = $(element);
-            }else{
-                selectedTimeBoxes.add($(element)); // TODO: Liian hidas?
-            }
-        },
-        stop: function (e) {
-            console.log("selection end!");
-            //console.log('Finished selecting   ' + this.elements + ' in ' + this.zone);
-        }
-    });*/
 }
 
 function clearTimeBoxSelection(){
@@ -584,6 +478,7 @@ function timeBoxClicked(e, multiSelectionOn = false){
         timeBoxesInInterval.forEach(tb => tb.addClass(selectedTimeBoxRangeClass));
         // I can't figure out how to make a jQuery object out of array of jQuery objects in an efficient way
         // (add function is slow), so do it by selecting from DOM based on class.
+        // TODO: katso tarkoitusta varten tehty funktio toisessa tiedostossa
         selectedTimeBoxes = $(selectedTimeBoxRangeSelector);
 
         // range selection is completed
