@@ -108,6 +108,12 @@ footer{
     min-height: 15px;
 }
 
+/* Make scroll bar always visible to prevent "jumping" when content grows larger
+than available height or shrinks smaller. */
+html{
+    overflow-y: scroll;
+}
+
 input[type='color']{
     height: 40px;
 }
