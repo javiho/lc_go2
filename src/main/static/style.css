@@ -56,6 +56,7 @@
     pointer-events: none; /* Must not prevent clicking the button they are in. */
 }
 
+/* TODO: ei liene käytössä?*/
 .selected-time-box{
     border: 2px dashed green;
 }
@@ -69,6 +70,7 @@
     /*box-shadow: 2px 2px 0px 0px red;*/
 }
 
+/* TODO: ei käytössä? */
 .time-box.start-range-selection-time-box{
     /*border-left: 2px dotted cyan;
     border-top: 2px dotted cyan;
@@ -93,6 +95,13 @@
 
 .future-colored{
     background-color: white;
+}
+
+.ds-selector{
+    background-color: rgba(0, 0, 0, 0.5);
+    border: 2px dashed #007bff;
+    /*display: none; Miksi?
+    pointer-events: none; Tämä rivi korjaa IE:llä tulevan ongelman? Kopioitu lähdekoodista */
 }
 
 footer{

@@ -389,7 +389,8 @@ function refreshDragSelectObject(){
             }else{
                 clearTimeBoxSelection();
             }
-        }
+        },
+        customStyles: true
     });
     console.log("Total selectables in the beginning:", dragSelect.getSelectables().length);
 }
