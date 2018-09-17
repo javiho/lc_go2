@@ -26,6 +26,7 @@ const defaultZoomLevel = -8;
 const timeBoxDefaultWidth = 49;
 const timeBoxDefaultHeight = 49;
 const isInvalidClass = "is-invalid";
+const multiSelectKeyCode = 16; // Shift key
 
 const timeUnits = {
     Day: "Day",
