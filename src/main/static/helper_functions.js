@@ -137,7 +137,7 @@ const lcHelpers = {};
         Pre-condition: jQueryObjectArray.length > 0. jQueryObjectArray is an array of jQuery objects.
         TODO: eikö tosiaan muka ole mitään tehokkaampaa tapaa tehdä tätä? Tämä lienee aika hidas.
      */
-    context.arrayToJQuery = function(jQueryObjectArray){
+    context.arrayToJQuery = function(jQueryObjectArray) {
         console.assert(jQueryObjectArray.length > 0);
         /*let mergedJQuery = jQueryObjectArray[0];
         if(jQueryObjectArray.length === 1){
@@ -149,11 +149,26 @@ const lcHelpers = {};
         return mergedJQuery;*/
 
         // Adding one by one into a cumulative JQuery object would be first solution to come to mind, but it's slow.
-        const arrayOfRegularElements = jQueryObjectArray.map(function(jq){
+        const arrayOfRegularElements = jQueryObjectArray.map(function (jq) {
             return jq[0];
         });
         const mergedJQuery = $(arrayOfRegularElements);
         return mergedJQuery;
-    }
+    };
+
+    /*
+        Pre-condition: coordinates has numeric x and y properties. Element is a jQuery object.
+        Parameter: coordinates relative to element itself.
+        Return value: coordinates relative to document.
+    */
+    context.posInElementToGlobalPos = function(coordinates, element){
+        const localX = coordinates.x;
+        const localY = coordinates.y;
+        const elementTopRelativeToViewport = element[0].getBoundingClientRect().top;
+        const elementLeftRelativeToViewport = element[0].getBoundingClientRect().left;
+        const newX = localX + elementLeftRelativeToViewport;
+        const newY = localY + elementTopRelativeToViewport;
+        return {x: newX, y: newY};
+    };
 
 })(lcHelpers);

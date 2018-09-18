@@ -18,7 +18,8 @@ let pastFutureColoringEnabled = true;
 
 let lastClickedSaveDeleteSubmit = ""; // TODO: pitäisi keksiä parempi tapa?
 let rangeSelectingInProgress = false;
-let rangeSelectingInitialTimeBox = null;
+let rangeSelectingInitialTimeBox = null; // TODO: pitäisi keksiä parempi tapa?
+let dragSelectStartElement = null; // TODO: pitäisi keksiä parempi tapa?
 let multiselectKeyPressed = false;
 
 function initialize(){
@@ -370,30 +371,19 @@ function glueMainPageData(data) {
     refreshDragSelectObject();
 }
 
-let dragSelectStartElement = null;
 function refreshDragSelectObject(){
     // TODO: nämä dragselectit jää hillumaan jonnekin - pitäisi jotenkin tuhota vanha kun uusi tehdään?
-    /*const newSelectables = document.getElementsByClassName('js-time-box');
-    dragSelect.area = document.getElementById('life-calendar');
-    //dragSelect.removeSelectables(dragSelect.getSelectables());
-    dragSelect.addSelectables(newSelectables);
-    console.log("total selectables after refreshing:", dragSelect.getSelectables().length);*/
     const selectables = document.getElementsByClassName('js-time-box');
     console.assert(selectables.length > 0, "This is probably not supposed to happen.");
-    console.log("Selection area:", document.getElementById('life-calendar'));
     dragSelect = new DragSelect({
-        //selectables: selectables, // TODO: sisältää template storage arean elementin, ja tämä ongelma on myös refresh functiossa.
+        //selectables: selectables, //Selectables is not used for performance reasons.
         area: document.getElementById('life-calendar'),
         onDragStart: function(elements){
             console.log("selection started!");
-            //console.log("elements:", $(elements));
             const cursorCursorPosition = dragSelect.getCurrentCursorPosition();
-            const currentGlobalCursorPosition = posInElementToGlobalPos(cursorCursorPosition, lifeCalendar);
-            console.log("cursorCursorPosition:", cursorCursorPosition,
-                "currentGlobalCursorPosition", currentGlobalCursorPosition);
+            const currentGlobalCursorPosition = lcHelpers.posInElementToGlobalPos(cursorCursorPosition, lifeCalendar);
             const tbAtPosition = findTimeBoxNearSelectionCursorPosition(currentGlobalCursorPosition);
             dragSelectStartElement = tbAtPosition;
-            console.log("element detected at drag start:", dragSelectStartElement);
         },
         callback: function(elements){
             if(multiselectKeyPressed){
@@ -402,20 +392,10 @@ function refreshDragSelectObject(){
             }
             console.log("selection ended!");
             const elementsJQuery = $(elements);
-            console.log("elements:", elements.length);
-            //const firstCursorPosition = dragSelect.getInitialCursorPosition();
             const currentCursorPosition = dragSelect.getCurrentCursorPosition();
-            // TODO: ei toimi jos scrollataan valinnan aikana kalenteria!:
-            //const firstGlobalCursorPosition = posInElementToGlobalPos(firstCursorPosition, lifeCalendar);
-            const currentGlobalCursorPosition = posInElementToGlobalPos(currentCursorPosition, lifeCalendar);
-            //console.log("first cursor position:", firstGlobalCursorPosition);
-            //console.log("selection starting element:", findTimeBoxNearSelectionCursorPosition(firstGlobalCursorPosition));
-            console.log("selection starting element:", dragSelectStartElement);
-            console.log("current cursor position:", currentGlobalCursorPosition);
-            console.log("selection finishing element:", findTimeBoxNearSelectionCursorPosition(currentGlobalCursorPosition));
+            const currentGlobalCursorPosition = lcHelpers.posInElementToGlobalPos(currentCursorPosition, lifeCalendar);
             const somethingSelected = true; // TODO: mietittävä voiko olla toisin
             if(somethingSelected){
-                //const selectionStartTb = findTimeBoxNearSelectionCursorPosition(firstGlobalCursorPosition);
                 const selectionStartTb = dragSelectStartElement;
                 const selectionEndTb = findTimeBoxNearSelectionCursorPosition(currentGlobalCursorPosition);
                 const bothSelectedTbs = $([selectionStartTb, selectionEndTb]);
@@ -425,8 +405,6 @@ function refreshDragSelectObject(){
                 const latestTbStartTime = moment.utc(latestTb.attr('data-end'));
                 const tbsInInterval = getTimeBoxesByInterval(earliestTbStartTime, latestTbStartTime);
                 const tbsInIntervalJQuery = lcHelpers.arrayToJQuery(tbsInInterval);
-                console.log("tbsInInterval.length:", tbsInInterval.length);
-                console.log("tbsInIntervalJQuery.length:", tbsInIntervalJQuery.length);
                 selectTimeBoxes(tbsInIntervalJQuery, true);
             }else{
                 clearTimeBoxSelection();
@@ -434,78 +412,7 @@ function refreshDragSelectObject(){
         },
         customStyles: true
     });
-    console.log("Total selectables in the beginning:", dragSelect.getSelectables().length);
 }
-
-/*
-    Parameter: selectionEndPosition is relative to document.
- */
-function findTimeBoxNearSelectionCursorPosition(cursorPosition){
-    const limit = 1000;
-    const stepPixels = 5; // TODO: voisi riippue tb:iden koosta.
-    let exploredPosition = cursorPosition;
-    for(let i = 0; i < limit; i++){
-        const explorationResult = getTimeBoxAtPoint(exploredPosition);
-        if(explorationResult.found){
-            return explorationResult.timeBox;
-        }
-        exploredPosition = {
-            x: exploredPosition.x - stepPixels,
-            y: exploredPosition.y
-        };
-    }
-    console.assert(false, "Was not able to find time box");
-}
-
-/*
-    Pre-condition: coordinates has x and y. There is 0 or 1 time boxes at position.
-    Parameter: coordinates are relative to document.
-    Return value: {timeBox: [time box], found: Boolean}
- */
-function getTimeBoxAtPoint(coordinates){
-    const elements = document.elementsFromPoint(coordinates.x, coordinates.y);
-    //const timeBoxes = elements.filter(element => element.classList.contains('js-time-box'));
-    //console.log("elements:", elements);
-    const timeBoxes = elements.filter(function(element){
-        const isTimeBox = element.classList.contains('js-time-box');
-        //console.log("element:", element);
-        //if(isTimeBox){
-            //console.log("is element time box?:", isTimeBox);
-            //const rect = element.getBoundingClientRect();
-            //console.log("limits:", rect.left, rect.right, rect.top, rect.bottom);
-        //}
-        return element.classList.contains('js-time-box');
-    });
-    //console.assert(timeBoxes.length > 0, "No time boxes at position", coordinates);
-    //console.assert(timeBoxes.length < 2, timeBoxes.length, "time boxes at position", coordinates);
-    //if( timeBoxes.length < 2 ) console.log("Warning:", timeBoxes.length, "time boxes at position", coordinates);
-    const found = timeBoxes.length > 0;
-    const timeBox = found ? timeBoxes[0] : null;
-    if(!found){
-        //console.log("tb was not found at", coordinates);
-    }
-    return { timeBox: timeBox, found: found };
-}
-
-/*
-    Pre-condition: coordinates has numeric x and y properties. Element is a jQuery object.
-    Parameter: coordinates relative to element itself.
-    Return value: coordinates relative to document.
- */
-function posInElementToGlobalPos(coordinates, element){
-    const localX = coordinates.x;
-    const localY = coordinates.y;
-    const elementTopRelativeToViewport = element[0].getBoundingClientRect().top;
-    const elementLeftRelativeToViewport = element[0].getBoundingClientRect().left;
-    console.log("localY", localY, "localX", localX, "y vp", elementTopRelativeToViewport, "x vp",
-        elementLeftRelativeToViewport);
-    //const newX = localX + element.offset().left;
-    //const newY = localY + element.offset().top - $(window).scrollTop(); // Take account the scrolling of window.
-    const newX = localX + elementLeftRelativeToViewport;
-    const newY = localY + elementTopRelativeToViewport;
-    return {x: newX, y: newY};
-}
-
 
 function clearTimeBoxSelection(){
     $('#life-calendar .js-time-box').removeClass(selectedTimeBoxRangeClass);
@@ -923,6 +830,43 @@ function setContrastingTimeBoxBorderColors(){
         const borderColorCssValue = lcHelpers.rgbArrayToString(contrastingColorNumbers)
         $(this).css( {borderColor: borderColorCssValue} );
     });
+}
+
+/*
+    Parameter: selectionEndPosition is relative to document.
+ */
+function findTimeBoxNearSelectionCursorPosition(cursorPosition){
+    const limit = 1000;
+    const stepPixels = 5; // TODO: voisi riippue tb:iden koosta.
+    let exploredPosition = cursorPosition;
+    for(let i = 0; i < limit; i++){
+        const explorationResult = getTimeBoxAtPoint(exploredPosition);
+        if(explorationResult.found){
+            return explorationResult.timeBox;
+        }
+        exploredPosition = {
+            x: exploredPosition.x - stepPixels,
+            y: exploredPosition.y
+        };
+    }
+    console.assert(false, "Was not able to find time box");
+}
+
+/*
+    Pre-condition: coordinates has x and y. There is 0 or 1 time boxes at position.
+    Parameter: coordinates are relative to document.
+    Return value: {timeBox: [time box], found: Boolean}
+ */
+function getTimeBoxAtPoint(coordinates){
+    const elements = document.elementsFromPoint(coordinates.x, coordinates.y);
+    const timeBoxes = elements.filter(function(element){
+        const isTimeBox = element.classList.contains('js-time-box');
+        return element.classList.contains('js-time-box');
+    });
+    //if( timeBoxes.length < 2 ) console.log("Warning:", timeBoxes.length, "time boxes at position", coordinates);
+    const found = timeBoxes.length > 0;
+    const timeBox = found ? timeBoxes[0] : null;
+    return { timeBox: timeBox, found: found };
 }
 
 /*
