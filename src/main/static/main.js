@@ -200,10 +200,11 @@ function handleLcOptionsFormSubmit(e){
     // Business logic based validation
     const startInput = $('#life-start-input');
     const endInput = $('#life-end-input');
-    let startInputValue = moment.utc(startInput.val());
-    let endInputValue = moment.utc(endInput.val());
-    let isStartValid = startInputValue.isSameOrAfter(MIN_DATE) && startInputValue.isBefore(MAX_DATE);
-    let isEndValid = endInputValue.isSameOrAfter(MIN_DATE) && endInputValue.isBefore(MAX_DATE);
+    const startInputValue = moment.utc(startInput.val());
+    const endInputValue = moment.utc(endInput.val());
+    const endInputValueExcl = endInputValue.add(1, 'days');
+    const isStartValid = startInputValue.isSameOrAfter(MIN_DATE) && startInputValue.isBefore(MAX_DATE);
+    const isEndValid = endInputValueExcl.isSameOrAfter(MIN_DATE) && endInputValueExcl.isBefore(MAX_DATE);
     if(!isStartValid){
         startInput.addClass(isInvalidClass);
         startInput.next().text("Date out of range");
@@ -212,9 +213,10 @@ function handleLcOptionsFormSubmit(e){
         endInput.addClass(isInvalidClass);
         endInput.next().text("Date out of range");
     }
-    console.log("end input value:");
-    console.log(endInputValue);
-    if(!endInputValue.isAfter(startInputValue)){
+    console.log("end input value excl:");
+    console.log(endInputValueExcl);
+    // The following happens also if endInputValueExcl is invalid date, like 30.2.
+    if(!endInputValueExcl.isAfter(startInputValue)){
         startInput.addClass(isInvalidClass);
         endInput.addClass(isInvalidClass);
         console.log("invalid classes add'd!");
@@ -230,9 +232,10 @@ function handleLcOptionsFormSubmit(e){
         }
     });
     if(!isAnyInvalid) {
+        // TODO: millä logiikalla $(this) on lcOptionsForm? Näyttää olevan, mutta miksi?
         $.ajax($(this).attr("data-action"),
             {
-                data: $(this).serialize(),
+                data: $(this).serialize(), // TODO: tähän jäätiin: pitäisikö antaa excl vai incl serverille?
                 method: $(this).attr("data-method"),
                 error: function (jqXHR, textStatus, errorThrown) {
                     alert("error'd: " + errorThrown);
@@ -557,16 +560,19 @@ function possiblyClearNoteChangingAndDeletionForm(){
  */
 function populateNoteChangingForm(note){
     const start = note.Start.format(isoDateFormatString);
-    const end = note.End.format(isoDateFormatString);
+    //const end = note.End.format(isoDateFormatString);
+    //console.log("note.End:", note.End.format(isoDateFormatString));
+    const inclEndDateString = lcHelpers.toInclusiveMoment(note.End).format(isoDateFormatString);
+    //console.log("incl date string:", inclEndDateString);
     const text = note.Text;
     const color = note.Color;
     const id = note.Id;
-    console.assert([start, end, text, id].every(x => x !== undefined), [start, end, text, id]);
+    console.assert([start, inclEndDateString, text, id].every(x => x !== undefined), [start, inclEndDateString, text, id]);
     //$('#note-changing-text-input').attr('value', text); // This doesn't work for some reason, replaced with the next line.
     $('#note-changing-text-input').val(text);
     $('#note-changing-color-input').val(color);
     $('#note-changing-start-input').attr('value', start);
-    $('#note-changing-end-input').attr('value', end);
+    $('#note-changing-end-input').attr('value', inclEndDateString);
     $('#note-changing-id').attr('value', id);
 
     $('#note-deleting-id').attr('value', id);
@@ -596,7 +602,18 @@ function updateLifeComponents(){
 
 function updateLifeOptions(){
     $('#life-start-input').val(life.Start.format(isoDateFormatString));
-    $('#life-end-input').val(life.End.format(isoDateFormatString));
+    const lifeEndClone = life.End.clone();
+    // They said moment.js is improvement to native JS Dates. But still, why are they also mutable?
+    // Why should dates ever be mutable? If a date changes, then it's a different date.
+    // It's not like if I agree to meet someone at a certain date, and then change it,
+    // I'll say: "I've got a change of plans, so let's make our meeting date two days bigger."
+    // They would be like: "So you want to change the date?" And I would be like: "No no, let's
+    // keep the same date, let's just make it two days later."
+    // I guess I could try to use Object.freeze() or something, but MDN docs don't unambiguously say
+    // that it DOESN'T fail silently, and that possibility sounds even worse.
+    // Profanities for grepping: fuck, shit, JavaScript
+    const lifeEndIncl = lifeEndClone.add(-1, 'days');
+    $('#life-end-input').val(lifeEndIncl.format(isoDateFormatString));
     $('#resolution-unit-select').val(resolutionUnit);
 }
 
@@ -681,7 +698,12 @@ function updateNotesDiv(){
     if(isAnyTimeBoxSelected) {
         const intervalStartString = startDataAttribute;
         const intervalEndString = endDataAttribute;
-        const intervalString = intervalStartString + " to " + intervalEndString;
+
+        // Reduce one day from the date string
+        const intervalEndAsMoment = moment.utc(intervalEndString, isoDateFormatString);
+        const inclIntervalEndString = lcHelpers.toInclusiveMoment(intervalEndAsMoment).format(isoDateFormatString);
+
+        const intervalString = intervalStartString + " to " + inclIntervalEndString;
         intervalSpan.text("Interval " + intervalString + ". ");
     }else{
         intervalSpan.text(noIntervalSelectedString);
@@ -691,8 +713,9 @@ function updateNotesDiv(){
     if(isAnyTimeBoxSelected) {
         const intervalStartMoment = moment.utc(startDataAttribute);
         const intervalEndMoment = moment.utc(endDataAttribute);
+        const inclIntervalEndMoment = lcHelpers.toInclusiveMoment(intervalEndMoment);
         const intervalStartAgeComponents = lcUtil.getAgeAsDateComponents(life.Start, intervalStartMoment);
-        const intervalEndAgeComponents = lcUtil.getAgeAsDateComponents(life.Start, intervalEndMoment);
+        const intervalEndAgeComponents = lcUtil.getAgeAsDateComponents(life.Start, inclIntervalEndMoment);
         const intervalAgeText = `${intervalStartAgeComponents.years}y ${intervalStartAgeComponents.months}m to ` +
             `${intervalEndAgeComponents.years}y ${intervalEndAgeComponents.months}m`;
         intervalAgeSpan.text("Age: " + intervalAgeText + ".");
@@ -724,7 +747,8 @@ function updateNewNoteForm(){
     const selectedRangeStartDate = moment.utc( firstSelectedTB.attr('data-start') );
     const selectedRangeEndDate = moment.utc( lastSelectedTB.attr('data-end') );
     const startString = selectedRangeStartDate.format(isoDateFormatString);
-    const endString = selectedRangeEndDate.format(isoDateFormatString);
+    const inclSelectedRangeEndDate = lcHelpers.toInclusiveMoment(selectedRangeEndDate);
+    const endString = inclSelectedRangeEndDate.format(isoDateFormatString);
     $('#new-note-start').val(startString);
     $('#new-note-end').val(endString);
 }

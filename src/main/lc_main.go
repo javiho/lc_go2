@@ -230,20 +230,21 @@ func changeLcOptions(form url.Values) error {
 	resolutionUnitString := form["resolution-unit"][0]
 	lifeStart, err1 := time.Parse(yyMMddLayout, form["life-start"][0])
 	lifeEnd, err2 := time.Parse(yyMMddLayout, form["life-end"][0])
+	lifeEndExcl := lifeEnd.AddDate(0, 0, 1)
 	if err1 != nil || err2 != nil{
 		log.Println("parse error")
 		return errors.New("parse error")
 	}
-	if lifeEnd.Before(lifeStart) || lifeEnd.Equal(lifeStart){
+	if lifeEndExcl.Before(lifeStart) || lifeEndExcl.Equal(lifeStart){
 		log.Println("erroneous date values: erroneous chronology")
-		return errors.New("start date must be before end date")
+		return errors.New("end date cannot be before start date")
 	}
 
 	resolutionUnit := timeUnitFromString[resolutionUnitString] // TODO: entä jos on virheellinen stringi?
 	//fmt.Println("new resolution unit:", resolutionUnit)
 	ResolutionUnit = resolutionUnit
 	TheLife.Start = lifeStart
-	TheLife.End = lifeEnd
+	TheLife.End = lifeEndExcl
 	return nil
 }
 
@@ -258,16 +259,17 @@ func createNoteFromForm(form url.Values) (Note, error) {
 	colorHexString := form["note-color"][0] // TODO: validointi?
 	startDate, err1 := time.Parse(yyMMddLayout, form["note-start"][0])
 	endDate, err2 := time.Parse(yyMMddLayout, form["note-end"][0])
+	endDateExcl := endDate.AddDate(0, 0, 1)
 	if err1 != nil || err2 != nil{
 		log.Println("parse error")
 		return Note{}, errors.New("Unparsable date.")
 	}
 
-	if endDate.Before(startDate) || endDate.Equal(startDate){
+	if endDateExcl.Before(startDate) || endDateExcl.Equal(startDate){
 		log.Println("erroneous date values")
 		return Note{}, errors.New("End date not after start date.")
 	}
-	note := Note{noteText, startDate, endDate, colorHexString, betterguid.New()}
+	note := Note{noteText, startDate, endDateExcl, colorHexString, betterguid.New()}
 	return note, nil
 }
 
@@ -294,18 +296,19 @@ func changeNoteAccordingToForm(note *Note, form url.Values) error {
 	colorHexString := form["color"][0]
 	startDate, err1 := time.Parse(yyMMddLayout, form["start-date"][0])
 	endDate, err2 := time.Parse(yyMMddLayout, form["end-date"][0])
+	endDateExcl := endDate.AddDate(0, 0, 1)
 	if err1 != nil || err2 != nil{
 		log.Println("parse error")
 		return errors.New("Unparsable date.")
 	}
-	if endDate.Before(startDate) || endDate.Equal(startDate){
+	if endDateExcl.Before(startDate) || endDateExcl.Equal(startDate){
 		log.Println("erroneous date values")
 		return errors.New("End date not after start date.")
 	}
 	note.Text = noteText
 	note.Color = colorHexString
 	note.Start = startDate
-	note.End = endDate
+	note.End = endDateExcl
 	return nil
 }
 

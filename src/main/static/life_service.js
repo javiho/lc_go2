@@ -111,9 +111,11 @@ const lifeService = {};
         //var lifeEndDate = moment.utc(life.End);
         const lifeStartDate = life.Start;
         const lifeEndDate = life.End;
+        console.log(lifeStartDate);
+        console.log(lifeEndDate);
         if(lifeStartDate.isAfter(lifeEndDate) || lifeStartDate.isSame(lifeEndDate)){
-            console.log(lifeStartDate);
-            console.log(lifeEndDate);
+            console.log(lifeStartDate.format());
+            console.log(lifeEndDate.format());
             console.assert(false, "Life start not before life end.");
         }
         const timeBoxes = [];
@@ -128,6 +130,8 @@ const lifeService = {};
             timeBoxes.push(newTimeBox);
             // Life end time is exclusive.
             if(tPlusResolutionUnit.isAfter(lifeEndDate) || tPlusResolutionUnit.isSame(lifeEndDate)){
+                console.log("life end is:", lifeEndDate.format());
+                console.log("createTimeBoxes: the last one was", tPlusResolutionUnit.format());
                 break;
             }
             counter += 1;

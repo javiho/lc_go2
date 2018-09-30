@@ -171,4 +171,22 @@ const lcHelpers = {};
         return {x: newX, y: newY};
     };
 
+    /*
+        Pre-condition: moment is a Moment.
+        Return value: a different Moment object which is a day less than moment.
+     */
+    context.toInclusiveMoment = function(moment){
+        return moment.clone().add(-1, 'days');
+    }
+
+    /*
+        Pre-condition: dateString is like 'YYYY-MM-DD'.
+        Return value: date string of same format but with one day less.
+     */
+    context.dateStringToInclusiveDateString = function(dateString){
+        const moment = moment.utc(dateString, isoDateFormatString);
+        const inclMoment = lcHelpers.toInclusiveMoment(moment);
+        return inclMoment.format(isoDateFormatString);
+    }
+
 })(lcHelpers);
