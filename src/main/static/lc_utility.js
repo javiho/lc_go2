@@ -172,9 +172,14 @@ const lcUtil = {};
         years is 1 and others are 0.
     */
     context.getAgeAsDateComponents = function(birth, currentMoment){
-        const years = currentMoment.year() - birth.year();
-        const months = currentMoment.month() - birth.month();
-        const days = currentMoment.days() - birth.days();
+        let years = currentMoment.year() - birth.year();
+        let months = currentMoment.month() - birth.month();
+        let days = currentMoment.days() - birth.days();
+        if(years < 0){
+            years = 0;
+            months = 0;
+            days = 0;
+        }
         return {years: years, months: months, days: days};
     }
 
