@@ -169,12 +169,17 @@ const lcUtil = {};
         Pre-condition: birth and currentMoment are Moments.
         Returns age with years, and extra months, and extra days. Returns a following kind of object:
         {years: Number, months: Number, days: Number}. Eg. when birth is 1.1.2000 and current moment is 1.1.2001,
-        years is 1 and others are 0.
+        years is 1 and others are 0. If currentMoment is before birth, all components are zero.
     */
     context.getAgeAsDateComponents = function(birth, currentMoment){
-        const years = currentMoment.year() - birth.year();
-        const months = currentMoment.month() - birth.month();
-        const days = currentMoment.days() - birth.days();
+        let years = currentMoment.year() - birth.year();
+        let months = currentMoment.month() - birth.month();
+        let days = currentMoment.days() - birth.days();
+        if(years < 0){
+            years = 0;
+            months = 0;
+            days = 0;
+        }
         return {years: years, months: months, days: days};
     }
 
