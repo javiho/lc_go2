@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage lives</title>
+    <link rel="stylesheet" type="text/css" href="/static/style.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+</head>
+<body>
+<div class="row">
+    <div class="col-6 ml-4 mb-4 mt-4">
+        <h2>Manage lives</h2>
+    </div>
+</div>
+<div class="row mt-10">
+    <div class="col">
+        <form id="new-life-form" class="mb-1 p-4 ml-5 border max-width-500" action="/create_life" method="POST">
+            <h5>New life</h5>
+            <div class="form-group mb-1">
+                <label for="life-creation-name-input">Life name:&nbsp;</label>
+                <input id="life-creation-name-input" type="text" class="form-control" name="name" value="unnamed">
+            </div>
+            <button type="submit" class="btn btn-primary">Create</button>
+        </form>
+    </div>
+</div>
+<div class="row">
+    <div class="col">
+        <div class="border p-4 ml-5 max-width-500">
+            <h5>Select life</h5>
+            <form class="form-inline mb-3" action="/delete_life" method="POST">
+                <div class="form-group mr-3 mb-1">
+                    <label for="life-select">Life:&nbsp;</label>
+                    <select id="life-select" class="form-control" name="life-id">
+                    {{range .Lives}}
+                        <option value="{{.Id}}">{{.Name}}</option>
+                    {{end}}
+                    </select>
+                </div>
+                <button id="go-to-life-button" class="btn btn-success mr-1">Go to life</button>
+                <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
+            <hr>
+            <form id="life-changing-form" class="form-inline" action="/change_life" method="POST">
+                <div class="form-group mr-3">
+                    <label for="life-changing-name-input">Change life name:&nbsp;</label>
+                    <input id="life-changing-name-input" type="text" class="form-control" name="life-name" value="unnamed">
+                </div>
+                <input id="selected-life-id-input" hidden name="selected-life-id" value="(No life selected)">
+                <button type="submit" class="btn btn-primary">Save</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js'></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+<script src="static/life_management.js"></script>
+</body>
+</html>

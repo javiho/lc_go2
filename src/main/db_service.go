@@ -11,6 +11,11 @@ import (
 var Db *sql.DB
 var lifeId = 1
 
+type LifeSummary struct{
+	Id int
+	Name string
+}
+
 func initializeDbService(){
 	// dataSourceName's root location is src folder
 	db, err := sql.Open("sqlite3", "./testdb1.db")
@@ -27,7 +32,7 @@ func closeDatabase(){
  */
 func loadLifeData() *Life{
 	db := Db
-	stmt, err := db.Prepare("SELECT * FROM life WHERE id = ?;")
+	stmt, err := db.Prepare("SELECT id, name, start, end FROM life WHERE id = ?;")
 	checkDbErr(err)
 	rows, err := stmt.Query(lifeId)
 	checkDbErr(err)
@@ -35,9 +40,10 @@ func loadLifeData() *Life{
 	defer rows.Close()
 	for rows.Next() {
 		var id int
+		var name string
 		var startDateString string
 		var endDateString string
-		err = rows.Scan(&id, &startDateString, &endDateString)
+		err = rows.Scan(&id, &name, &startDateString, &endDateString)
 		if err != nil{
 			log.Fatal(err)
 		}
@@ -141,6 +147,52 @@ func updateLifeInDb(life Life){
 	_, err = stmt.Exec(startAsString, endAsString, lifeId)
 	checkDbErr(err)
 	fmt.Println("updated life in db")
+}
+
+func addLifeToDb(name string, start time.Time, end time.Time){
+	db := Db
+	stmt, err := db.Prepare("INSERT INTO life (name, start, end) VALUES (?, ?, ?);")
+	checkDbErr(err)
+	startAsString := start.Format(dbDateLayout)
+	endAsString := end.Format(dbDateLayout)
+	_, err = stmt.Exec(name, startAsString, endAsString)
+	checkDbErr(err)
+	fmt.Println("added life to db")
+}
+
+func deleteLifeFromDb(lifeId int){
+	db := Db
+	stmt, err := db.Prepare("DELETE FROM life WHERE id = ?;")
+	checkDbErr(err)
+	_, err = stmt.Exec(lifeId)
+	checkDbErr(err)
+	fmt.Println("deleted life from db")
+}
+
+/*
+	Returns life ids and life names.
+ */
+func listLives() []LifeSummary {
+	db := Db
+	stmt, err := db.Prepare("SELECT id, name FROM life")
+	checkDbErr(err)
+	rows, err := stmt.Query()
+	checkDbErr(err)
+	defer rows.Close()
+	var lives []LifeSummary
+	for rows.Next(){
+		var id int
+		var name string
+		err = rows.Scan(&id, &name)
+		if err != nil{
+			log.Fatal(err)
+		}
+		newLifeSummary := LifeSummary{id, name}
+		lives = append(lives, newLifeSummary)
+	}
+	err = rows.Err()
+	checkDbErr(err)
+	return lives
 }
 
 func checkDbErr(err error){

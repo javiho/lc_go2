@@ -52,6 +52,10 @@ type LcMainPageVariables struct{
 	Life *Life
 }
 
+type LifeManagementPageVariables struct{
+	Lives []LifeSummary
+}
+
 type Person struct {
 ID        string   `json:"id,omitempty"`
 Firstname string   `json:"firstname,omitempty"`
@@ -91,6 +95,8 @@ func main() {
 	router.HandleFunc("/add_note", HandleAddNote).Methods("POST")
 	router.HandleFunc("/delete_note", HandleDeleteNote).Methods("POST")
 	router.HandleFunc("/change_options", HandleChangeLcOptions).Methods("PUT")
+	router.HandleFunc("/life_management", HandleLifeManagement).Methods("GET")
+	router.HandleFunc("/create_life", HandleAddLife).Methods("POST")
 	router.HandleFunc("/people", GetPeople).Methods("GET")
 	router.HandleFunc("/people/{id}", GetPerson).Methods("GET")
 	router.HandleFunc("/people/{id}", CreatePerson).Methods("POST")
@@ -143,6 +149,18 @@ func initializeData() {
 func GetMainPage(w http.ResponseWriter, r *http.Request){
 	pageVariables := getLcMainPageVariables()
 	t, err := template.ParseFiles("src/main/main_view.html")
+	if err != nil{
+		panic(err)
+	}
+	err = t.Execute(w, pageVariables)
+	if err != nil{
+		panic(err)
+	}
+}
+
+func HandleLifeManagement(w http.ResponseWriter, r *http.Request){
+	pageVariables := getLifeManagementPageVariables()
+	t, err := template.ParseFiles("src/main/static/life_management.html")
 	if err != nil{
 		panic(err)
 	}
@@ -222,6 +240,20 @@ func HandleDeleteNote(w http.ResponseWriter, r *http.Request){
 	json.NewEncoder(w).Encode(getLcMainPageVariables())
 
 	deleteNoteFromDb(*note)
+}
+
+func HandleAddLife(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	fmt.Println(r.Form)
+	lifeName := r.Form["name"][0]
+	if lifeName == ""{
+		http.Error(w, "Life name can't be empty", 500)
+		return
+	}
+	startDate := defaultStartDate
+	endDate := defaultEndDate
+	addLifeToDb(lifeName, startDate, endDate)
+	HandleLifeManagement(w, r)
 }
 
 
@@ -314,6 +346,10 @@ func changeNoteAccordingToForm(note *Note, form url.Values) error {
 
 func getLcMainPageVariables() LcMainPageVariables{
 	return LcMainPageVariables{getStringFromTimeUnit(ResolutionUnit), timeUnitStrings, TheLife}
+}
+
+func getLifeManagementPageVariables() LifeManagementPageVariables{
+	return LifeManagementPageVariables{listLives()}
 }
 
 
