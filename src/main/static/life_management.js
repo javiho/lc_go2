@@ -18,7 +18,7 @@ function initializeLifeManagement(){
     lifeSelect.change(function(){
         const selectedLifeId = lifeSelect.val();
         const selectedLifeName = lifeIdsAndNames.get(selectedLifeId);
-        lifeChangingNameInput.val(selectedLifeName)
+        lifeChangingNameInput.val(selectedLifeName);
         $('#selected-life-id-input').val(selectedLifeId);
     });
 }

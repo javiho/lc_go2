@@ -149,6 +149,15 @@ func updateLifeInDb(life Life){
 	fmt.Println("updated life in db")
 }
 
+func updateLifeNameInDb(lifeId int, lifeName string){
+	db := Db
+	stmt, err := db.Prepare("UPDATE life SET name = ? WHERE id=?;")
+	checkDbErr(err)
+	_, err = stmt.Exec(lifeName, lifeId)
+	checkDbErr(err)
+	fmt.Println("updated life name in db")
+}
+
 func addLifeToDb(name string, start time.Time, end time.Time){
 	db := Db
 	stmt, err := db.Prepare("INSERT INTO life (name, start, end) VALUES (?, ?, ?);")
@@ -193,6 +202,16 @@ func listLives() []LifeSummary {
 	err = rows.Err()
 	checkDbErr(err)
 	return lives
+}
+
+func doesLifeExist(lifeId int) bool{
+	lives := listLives()
+	for _, life := range lives{
+		if life.Id == lifeId{
+			return true
+		}
+	}
+	return false
 }
 
 func checkDbErr(err error){

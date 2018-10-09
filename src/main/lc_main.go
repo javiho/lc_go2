@@ -12,6 +12,7 @@ import (
 	"html/template"
 	"net/url"
 	"errors"
+	"strconv"
 )
 
 type NoteBox struct{
@@ -97,6 +98,7 @@ func main() {
 	router.HandleFunc("/change_options", HandleChangeLcOptions).Methods("PUT")
 	router.HandleFunc("/life_management", HandleLifeManagement).Methods("GET")
 	router.HandleFunc("/create_life", HandleAddLife).Methods("POST")
+	router.HandleFunc("/change_life", HandleChangeLife).Methods("POST")
 	router.HandleFunc("/people", GetPeople).Methods("GET")
 	router.HandleFunc("/people/{id}", GetPerson).Methods("GET")
 	router.HandleFunc("/people/{id}", CreatePerson).Methods("POST")
@@ -159,15 +161,7 @@ func GetMainPage(w http.ResponseWriter, r *http.Request){
 }
 
 func HandleLifeManagement(w http.ResponseWriter, r *http.Request){
-	pageVariables := getLifeManagementPageVariables()
-	t, err := template.ParseFiles("src/main/static/life_management.html")
-	if err != nil{
-		panic(err)
-	}
-	err = t.Execute(w, pageVariables)
-	if err != nil{
-		panic(err)
-	}
+	sendLifeManagementPage(w, r)
 }
 
 func GetLife(w http.ResponseWriter, r *http.Request){
@@ -253,10 +247,44 @@ func HandleAddLife(w http.ResponseWriter, r *http.Request) {
 	startDate := defaultStartDate
 	endDate := defaultEndDate
 	addLifeToDb(lifeName, startDate, endDate)
-	HandleLifeManagement(w, r)
+	sendLifeManagementPage(w, r)
+}
+
+func HandleChangeLife(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	fmt.Println(r.Form)
+	lifeIdString := r.Form["id"][0]
+	newLifeName := r.Form["name"][0]
+	if lifeIdString == "" || newLifeName == ""{
+		http.Error(w, "form missing attribute(s)", 400)
+		return
+	}
+	lifeId, err := strconv.Atoi(lifeIdString)
+	if err != nil{
+		http.Error(w, "erroneous life id", 400)
+		return
+	}
+	lifeWithIdExists := doesLifeExist(lifeId)
+	if !lifeWithIdExists{
+		http.Error(w, "life with id " + strconv.Itoa(lifeId) + " doesn't exist", 500)
+		return
+	}
+	updateLifeNameInDb(lifeId, newLifeName)
+	sendLifeManagementPage(w, r)
 }
 
 
+func sendLifeManagementPage(w http.ResponseWriter, r *http.Request){
+	pageVariables := getLifeManagementPageVariables()
+	t, err := template.ParseFiles("src/main/static/life_management.html")
+	if err != nil{
+		panic(err)
+	}
+	err = t.Execute(w, pageVariables)
+	if err != nil{
+		panic(err)
+	}
+}
 
 func changeLcOptions(form url.Values) error {
 	resolutionUnitString := form["resolution-unit"][0]
