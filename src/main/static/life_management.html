@@ -31,7 +31,7 @@
             <form class="form-inline mb-3" action="/delete_life" method="POST">
                 <div class="form-group mr-3 mb-1">
                     <label for="life-select">Life:&nbsp;</label>
-                    <select id="life-select" class="form-control" name="life-id">
+                    <select id="life-select" class="form-control" name="id">
                     {{range .Lives}}
                         <option value="{{.Id}}">{{.Name}}</option>
                     {{end}}

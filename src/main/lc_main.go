@@ -99,6 +99,7 @@ func main() {
 	router.HandleFunc("/life_management", HandleLifeManagement).Methods("GET")
 	router.HandleFunc("/create_life", HandleAddLife).Methods("POST")
 	router.HandleFunc("/change_life", HandleChangeLife).Methods("POST")
+	router.HandleFunc("/delete_life", HandleDeleteLife).Methods("POST")
 	router.HandleFunc("/people", GetPeople).Methods("GET")
 	router.HandleFunc("/people/{id}", GetPerson).Methods("GET")
 	router.HandleFunc("/people/{id}", CreatePerson).Methods("POST")
@@ -270,6 +271,28 @@ func HandleChangeLife(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	updateLifeNameInDb(lifeId, newLifeName)
+	sendLifeManagementPage(w, r)
+}
+
+func HandleDeleteLife(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	fmt.Println(r.Form)
+	lifeIdString := r.Form["id"][0]
+	if lifeIdString == ""{
+		http.Error(w, "form missing attribute(s)", 400)
+		return
+	}
+	lifeId, err := strconv.Atoi(lifeIdString)
+	if err != nil{
+		http.Error(w, "erroneous life id", 400)
+		return
+	}
+	lifeWithIdExists := doesLifeExist(lifeId)
+	if !lifeWithIdExists{
+		http.Error(w, "life with id " + strconv.Itoa(lifeId) + " doesn't exist", 500)
+		return
+	}
+	deleteLifeFromDb(lifeId)
 	sendLifeManagementPage(w, r)
 }
 
