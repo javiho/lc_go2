@@ -144,7 +144,9 @@ func initializeData() {
 	//	notes}
 
 	initializeDbService()
-	TheLife = loadLifeData()
+	defaultLifeId := getDefaultLifeId()
+	fmt.Println("default life id is ", defaultLifeId)
+	TheLife = loadLifeData(defaultLifeId)
 
 	//makeAllNotesVisible(TheLife)
 }
@@ -210,14 +212,14 @@ func HandleAddNote(w http.ResponseWriter, r *http.Request){
 	fmt.Println(r.Form)
 	newNote, err := createNoteFromForm(r.Form)
 	if err != nil{
-		http.Error(w, err.Error(), 500);
+		http.Error(w, err.Error(), 500)
 		return
 	}
 	TheLife.addNote(&newNote)
 	fmt.Println("note added with id: ", newNote.Id)
 	json.NewEncoder(w).Encode(getLcMainPageVariables())
 
-	addNoteToDb(newNote)
+	addNoteToDb(newNote, TheLife)
 }
 
 func HandleDeleteNote(w http.ResponseWriter, r *http.Request){
@@ -242,7 +244,7 @@ func HandleAddLife(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(r.Form)
 	lifeName := r.Form["name"][0]
 	if lifeName == ""{
-		http.Error(w, "Life name can't be empty", 500)
+		http.Error(w, "Life name can't be empty", 400)
 		return
 	}
 	startDate := defaultStartDate
@@ -295,6 +297,7 @@ func HandleDeleteLife(w http.ResponseWriter, r *http.Request) {
 	deleteLifeFromDb(lifeId)
 	sendLifeManagementPage(w, r)
 }
+
 
 
 func sendLifeManagementPage(w http.ResponseWriter, r *http.Request){

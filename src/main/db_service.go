@@ -6,10 +6,11 @@ import (
 	"fmt"
 	"log"
 	_ "github.com/mattn/go-sqlite3"
+	"errors"
 )
 
 var Db *sql.DB
-var lifeId = 1
+//var lifeId = 1
 
 type LifeSummary struct{
 	Id int
@@ -29,13 +30,15 @@ func closeDatabase(){
 
 /*
 	Fetches life data from database and returns it as Life object.
+	Pre-condition: life with id lifeId exists in the database.
  */
-func loadLifeData() *Life{
+func loadLifeData(lifeId int) *Life{
 	db := Db
 	stmt, err := db.Prepare("SELECT id, name, start, end FROM life WHERE id = ?;")
 	checkDbErr(err)
 	rows, err := stmt.Query(lifeId)
 	checkDbErr(err)
+	lifeFound := false
 	var newLife Life
 	defer rows.Close()
 	for rows.Next() {
@@ -59,13 +62,42 @@ func loadLifeData() *Life{
 		fmt.Println(id, startDateString, endDateString)
 		fmt.Println("refined dates:")
 		fmt.Println(startDate, endDate)
-		newLife = Life{startDate, endDate, nil}
+		newLife = Life{id, startDate, endDate, nil}
+		lifeFound = true
+	}
+	if !lifeFound{
+		panic(errors.New("no life of found with the id passed as argument"))
 	}
 	err = rows.Err()
 	checkDbErr(err)
 	lifeNotes := fetchNotes(lifeId)
 	newLife.Notes = lifeNotes
 	return &newLife
+}
+
+func getDefaultLifeId() int{
+	db := Db
+	stmt, err := db.Prepare("SELECT id FROM life;")
+	checkDbErr(err)
+	rows, err := stmt.Query()
+	checkDbErr(err)
+	lifeFound := false
+	defer rows.Close()
+	var id int
+	for rows.Next() {
+		err = rows.Scan(&id)
+		if err != nil{
+			log.Fatal(err)
+		}
+		lifeFound = true
+		break
+	}
+	if !lifeFound{
+		panic(errors.New("no lives found"))
+	}
+	err = rows.Err()
+	checkDbErr(err)
+	return id
 }
 
 func fetchNotes(lifeId int) []*Note{
@@ -107,13 +139,13 @@ func fetchNotes(lifeId int) []*Note{
 	return notes
 }
 
-func addNoteToDb(note Note){
+func addNoteToDb(note Note, life *Life){
 	db := Db
 	stmt, err := db.Prepare("INSERT INTO note (id, text, start, end, color, life_id) VALUES (?, ?, ?, ?, ?, ?);")
 	checkDbErr(err)
 	startAsString := note.Start.Format(dbDateLayout)
 	endAsString := note.End.Format(dbDateLayout)
-	_, err = stmt.Exec(note.Id, note.Text, startAsString, endAsString, note.Color, lifeId)
+	_, err = stmt.Exec(note.Id, note.Text, startAsString, endAsString, note.Color, life.DatabaseId)
 	checkDbErr(err)
 	fmt.Println("added note to db")
 }
@@ -144,7 +176,7 @@ func updateLifeInDb(life Life){
 	checkDbErr(err)
 	startAsString := life.Start.Format(dbDateLayout)
 	endAsString := life.End.Format(dbDateLayout)
-	_, err = stmt.Exec(startAsString, endAsString, lifeId)
+	_, err = stmt.Exec(startAsString, endAsString, life.DatabaseId)
 	checkDbErr(err)
 	fmt.Println("updated life in db")
 }

@@ -56,6 +56,7 @@ var defaultStartDate = time.Date(1980, time.January, 1, 0, 0, 0, 0, time.UTC)
 var defaultEndDate = time.Date(2060, time.July, 15, 0, 0, 0, 0, time.UTC)
 
 type Life struct{
+	DatabaseId int
 	Start time.Time
 	End time.Time
 	Notes []*Note

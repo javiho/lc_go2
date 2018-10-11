@@ -19,20 +19,33 @@ function initializeLifeManagement(){
         lifeIdsAndNames.set(lifeId, lifeName);
     });
 
+    const selectedLifeIdInput = $('#selected-life-id-input');
     const lifeChangingNameInput = $('#life-changing-name-input');
-    lifeChangingNameInput.val(getFirstValueOfMap(lifeIdsAndNames));
-    console.log("it is done");
+    const firstLife = getFirstKeyValuePairOfMap(lifeIdsAndNames);
+    selectedLifeIdInput.val(firstLife.key);
+    lifeChangingNameInput.val(firstLife.value);
     lifeSelect.change(function(){
         const selectedLifeId = lifeSelect.val();
         const selectedLifeName = lifeIdsAndNames.get(selectedLifeId);
         lifeChangingNameInput.val(selectedLifeName);
         $('#selected-life-id-input').val(selectedLifeId);
     });
+
+    $('#go-to-life-button').click(function(){
+        const selectedLifeId = lifeSelect.val();
+        // TODO: navigointi
+    });
 }
 
 /*
     Pre-condition: map has at least one value.
  */
-function getFirstValueOfMap(map){
-    return map.values().next().value;
+function getFirstKeyValuePairOfMap(map){
+    let keyValuePair;
+    for(let [key, value] of map.entries()){
+        keyValuePair = {key: key, value: value};
+        break;
+    }
+    return keyValuePair;
+    //return map.values().next().value;
 }
