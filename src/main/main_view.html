@@ -10,21 +10,27 @@
 <body>
 <div class="container-fluid">
 
+<!--<div class="row">
+    <div class="col-12">
+        <nav class="navbar"></nav>
+        <a class="navbar-brand">Life Calendar</a>
+    </div>
+</div>-->
 <div class="row mb-2 mt-1 top-bar">
     <div class="col-10">
         <div class="d-flex flex-wrap justify-content-between">
             <form id="lc-options-form" class="form-inline needs-validation" data-action="/change_options" data-method="put" novalidate>
-                <label for="resolution-unit-select">Time unit:</label>
+                <label for="resolution-unit-select">Time unit:&nbsp;</label>
                 <select id="resolution-unit-select" class="form-control form-control-sm mr-sm-2" name="resolution-unit" form="lc-options-form"
                         data-default-selected="{{.ResolutionUnit}}">
                 {{range .AllResolutionUnits}}
                     <option value="{{.}}">{{.}}</option>
                 {{end}}
                 </select>
-                <label for="life-start-input">Birth date:</label>
+                <label for="life-start-input">Birth:&nbsp;</label>
                 <input id="life-start-input" class="form-control form-control-sm mr-sm-2" name="life-start" type="date" value="(empty)" required>
                 <span class="invalid-feedback">Can't handle this date</span>
-                <label for="life-end-input">Estimated death date:</label>
+                <label for="life-end-input">Death (estimate):&nbsp;</label>
                 <input id="life-end-input" class="form-control form-control-sm mr-sm-2" name="life-end" type="date" value="(empty)" required>
                 <span class="invalid-feedback">Can't handle this date</span>
                 <button type="submit" class="btn btn-primary">Save</button>
@@ -36,6 +42,7 @@
                 <button id="restore-default-zoom-button" class="btn" type="button" title="Restore default zoom">
                     <img class="small-icon" src="/static/open-iconic/svg/magnifying-glass.svg" alt="default zoom icon">
                 </button>
+                <a href="/life_management"><button id="manage-lives-button" class="btn btn-success">Manage lives</button></a>
             </div>
         </div>
     </div>

@@ -19,6 +19,12 @@ INSERT INTO life VALUES (1, "1995-01-01 00:00:00.000", "2080-01-01 00:00:00.000"
 INSERT INTO note VALUES ("hcNote1", "Nn 1", "2017-02-15 00:00:00.000", "2017-04-01 00:00:00.000", "#0000ff", 1)
 INSERT INTO note VALUES ("hcNote2", "Nn 2", "2018-11-01 00:00:00.000", "2018-11-15 00:00:00.000", "#00ff00", 1)
 
+ALTER TABLE LIFE ADD COLUMN NAME TEXT;
+
+DROP TABLE life;
+CREATE TABLE life(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, start TEXT, end TEXT);
+INSERT INTO life(name, start, end) VALUES ("nimi", "1995-01-01 00:00:00.000", "2080-01-01 00:00:00.000");
+
  */
 
 type Note struct{
@@ -46,8 +52,11 @@ const(
 const yyMMddLayout = "2006-01-02"
 const dbDateLayout = "2006-01-02 15:04:05.000"
 const defaultNoteText = "(Unnamed note)"
+var defaultStartDate = time.Date(1980, time.January, 1, 0, 0, 0, 0, time.UTC)
+var defaultEndDate = time.Date(2060, time.July, 15, 0, 0, 0, 0, time.UTC)
 
 type Life struct{
+	DatabaseId int
 	Start time.Time
 	End time.Time
 	Notes []*Note

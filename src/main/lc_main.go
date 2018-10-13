@@ -12,6 +12,7 @@ import (
 	"html/template"
 	"net/url"
 	"errors"
+	"strconv"
 )
 
 type NoteBox struct{
@@ -42,6 +43,8 @@ type TimeBox struct {
 // TODO: ne voisivat olla samassa structissa?
 var ResolutionUnit TimeUnit
 var NoteVisibilities map[*Note]bool
+
+var router *mux.Router
 //var VisibleNotes *list.List
 
 var TheLife *Life
@@ -50,6 +53,10 @@ type LcMainPageVariables struct{
 	ResolutionUnit string
 	AllResolutionUnits []string
 	Life *Life
+}
+
+type LifeManagementPageVariables struct{
+	Lives []LifeSummary
 }
 
 type Person struct {
@@ -80,17 +87,23 @@ func main() {
 	flag.StringVar(&dir, "dir", ".", "the directory to serve files from. Defaults to the current dir")
 	flag.Parse()
 
-	router := mux.NewRouter()
+	router = mux.NewRouter()
 	fmt.Println(dir)
 	
 	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./src/main/static"))))
 	router.HandleFunc("/", GetMainPage).Methods("GET")
+	router.HandleFunc("/life_calendar", GetMainPageWithLife)
+	//router.Path("/life_calendar").Queries("lifeId", ".*").HandlerFunc(GetMainPageWithLife)
 	router.HandleFunc("/get_main_page_data", GetMainPageData).Methods("GET")
 	router.HandleFunc("/get_life", GetLife).Methods("GET")
 	router.HandleFunc("/change_note", HandleChangeNote).Methods("POST")
 	router.HandleFunc("/add_note", HandleAddNote).Methods("POST")
 	router.HandleFunc("/delete_note", HandleDeleteNote).Methods("POST")
 	router.HandleFunc("/change_options", HandleChangeLcOptions).Methods("PUT")
+	router.HandleFunc("/life_management", HandleLifeManagement).Methods("GET")
+	router.HandleFunc("/create_life", HandleAddLife).Methods("POST")
+	router.HandleFunc("/change_life", HandleChangeLife).Methods("POST")
+	router.HandleFunc("/delete_life", HandleDeleteLife).Methods("POST")
 	router.HandleFunc("/people", GetPeople).Methods("GET")
 	router.HandleFunc("/people/{id}", GetPerson).Methods("GET")
 	router.HandleFunc("/people/{id}", CreatePerson).Methods("POST")
@@ -135,7 +148,9 @@ func initializeData() {
 	//	notes}
 
 	initializeDbService()
-	TheLife = loadLifeData()
+	defaultLifeId := getDefaultLifeId()
+	fmt.Println("default life id is ", defaultLifeId)
+	TheLife = loadLifeData(defaultLifeId)
 
 	//makeAllNotesVisible(TheLife)
 }
@@ -150,6 +165,29 @@ func GetMainPage(w http.ResponseWriter, r *http.Request){
 	if err != nil{
 		panic(err)
 	}
+}
+
+func GetMainPageWithLife(w http.ResponseWriter, r *http.Request){
+	// TODO
+	//lifeIdString := mux.Vars(r)["life-id"]
+	fmt.Println("GetMainPageWithLife called")
+	lifeIdString := r.URL.Query()["life-id"][0]
+	//lifeIdString := r.FormValue("lifeId")
+	lifeId, err := strconv.Atoi(lifeIdString)
+	if err != nil{
+		http.Error(w, "unparsable life id", 400)
+		return
+	}
+	if !doesLifeExist(lifeId){
+		http.Error(w, "a life with that id doesn't exist", 404)
+		return
+	}
+	TheLife = loadLifeData(lifeId)
+	GetMainPage(w, r)
+}
+
+func HandleLifeManagement(w http.ResponseWriter, r *http.Request){
+	sendLifeManagementPage(w, r)
 }
 
 func GetLife(w http.ResponseWriter, r *http.Request){
@@ -197,14 +235,14 @@ func HandleAddNote(w http.ResponseWriter, r *http.Request){
 	fmt.Println(r.Form)
 	newNote, err := createNoteFromForm(r.Form)
 	if err != nil{
-		http.Error(w, err.Error(), 500);
+		http.Error(w, err.Error(), 500)
 		return
 	}
 	TheLife.addNote(&newNote)
 	fmt.Println("note added with id: ", newNote.Id)
 	json.NewEncoder(w).Encode(getLcMainPageVariables())
 
-	addNoteToDb(newNote)
+	addNoteToDb(newNote, TheLife)
 }
 
 func HandleDeleteNote(w http.ResponseWriter, r *http.Request){
@@ -224,7 +262,78 @@ func HandleDeleteNote(w http.ResponseWriter, r *http.Request){
 	deleteNoteFromDb(*note)
 }
 
+func HandleAddLife(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	fmt.Println(r.Form)
+	lifeName := r.Form["name"][0]
+	if lifeName == ""{
+		http.Error(w, "Life name can't be empty", 400)
+		return
+	}
+	startDate := defaultStartDate
+	endDate := defaultEndDate
+	addLifeToDb(lifeName, startDate, endDate)
+	sendLifeManagementPage(w, r)
+}
 
+func HandleChangeLife(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	fmt.Println(r.Form)
+	lifeIdString := r.Form["id"][0]
+	newLifeName := r.Form["name"][0]
+	if lifeIdString == "" || newLifeName == ""{
+		http.Error(w, "form missing attribute(s)", 400)
+		return
+	}
+	lifeId, err := strconv.Atoi(lifeIdString)
+	if err != nil{
+		http.Error(w, "erroneous life id", 400)
+		return
+	}
+	lifeWithIdExists := doesLifeExist(lifeId)
+	if !lifeWithIdExists{
+		http.Error(w, "life with id " + strconv.Itoa(lifeId) + " doesn't exist", 500)
+		return
+	}
+	updateLifeNameInDb(lifeId, newLifeName)
+	sendLifeManagementPage(w, r)
+}
+
+func HandleDeleteLife(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	fmt.Println(r.Form)
+	lifeIdString := r.Form["id"][0]
+	if lifeIdString == ""{
+		http.Error(w, "form missing attribute(s)", 400)
+		return
+	}
+	lifeId, err := strconv.Atoi(lifeIdString)
+	if err != nil{
+		http.Error(w, "erroneous life id", 400)
+		return
+	}
+	lifeWithIdExists := doesLifeExist(lifeId)
+	if !lifeWithIdExists{
+		http.Error(w, "life with id " + strconv.Itoa(lifeId) + " doesn't exist", 500)
+		return
+	}
+	deleteLifeFromDb(lifeId)
+	sendLifeManagementPage(w, r)
+}
+
+
+
+func sendLifeManagementPage(w http.ResponseWriter, r *http.Request){
+	pageVariables := getLifeManagementPageVariables()
+	t, err := template.ParseFiles("src/main/static/life_management.html")
+	if err != nil{
+		panic(err)
+	}
+	err = t.Execute(w, pageVariables)
+	if err != nil{
+		panic(err)
+	}
+}
 
 func changeLcOptions(form url.Values) error {
 	resolutionUnitString := form["resolution-unit"][0]
@@ -314,6 +423,10 @@ func changeNoteAccordingToForm(note *Note, form url.Values) error {
 
 func getLcMainPageVariables() LcMainPageVariables{
 	return LcMainPageVariables{getStringFromTimeUnit(ResolutionUnit), timeUnitStrings, TheLife}
+}
+
+func getLifeManagementPageVariables() LifeManagementPageVariables{
+	return LifeManagementPageVariables{listLives()}
 }
 
 

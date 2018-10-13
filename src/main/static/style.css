@@ -104,6 +104,10 @@
     pointer-events: none; Tämä rivi korjaa IE:llä tulevan ongelman? Kopioitu lähdekoodista */
 }
 
+.max-width-500{
+    max-width: 500px;
+}
+
 footer{
     min-height: 15px;
 }

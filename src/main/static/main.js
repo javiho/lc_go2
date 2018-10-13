@@ -364,6 +364,9 @@ function glueMainPageData(data) {
     life = data.Life;
     console.assert(life !== undefined, "Life is undefined.");
     resolutionUnit = data.ResolutionUnit;
+    if(life.Notes == null){
+        life.Notes = [];
+    }
     lifeService.datifyLifeObject(life);
     console.log("life");
     console.log(life);
