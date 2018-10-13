@@ -37,8 +37,11 @@
                     {{end}}
                     </select>
                 </div>
-                <button id="go-to-life-button" class="btn btn-success mr-1">Go to life</button>
+                <button id="go-to-life-button" form="go-to-life-form" class="btn btn-success mr-1" type="submit">Go to life</button>
                 <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
+            <form id="go-to-life-form" action="/life_calendar" method="GET">
+                <input id="go-to-life-form-selected-id-input" hidden name="life-id" value="(no life selected)">
             </form>
             <hr>
             <form id="life-changing-form" class="form-inline" action="/change_life" method="POST">

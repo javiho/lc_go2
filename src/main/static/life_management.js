@@ -21,14 +21,18 @@ function initializeLifeManagement(){
 
     const selectedLifeIdInput = $('#selected-life-id-input');
     const lifeChangingNameInput = $('#life-changing-name-input');
+    const goToLifeFormSelectedIdInput = $('#go-to-life-form-selected-id-input');
     const firstLife = getFirstKeyValuePairOfMap(lifeIdsAndNames);
     selectedLifeIdInput.val(firstLife.key);
     lifeChangingNameInput.val(firstLife.value);
+    goToLifeFormSelectedIdInput.val(firstLife.key);
+
     lifeSelect.change(function(){
         const selectedLifeId = lifeSelect.val();
         const selectedLifeName = lifeIdsAndNames.get(selectedLifeId);
         lifeChangingNameInput.val(selectedLifeName);
-        $('#selected-life-id-input').val(selectedLifeId);
+        selectedLifeIdInput.val(selectedLifeId);
+        goToLifeFormSelectedIdInput.val(selectedLifeId);
     });
 
     $('#go-to-life-button').click(function(){

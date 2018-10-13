@@ -43,6 +43,8 @@ type TimeBox struct {
 // TODO: ne voisivat olla samassa structissa?
 var ResolutionUnit TimeUnit
 var NoteVisibilities map[*Note]bool
+
+var router *mux.Router
 //var VisibleNotes *list.List
 
 var TheLife *Life
@@ -85,11 +87,13 @@ func main() {
 	flag.StringVar(&dir, "dir", ".", "the directory to serve files from. Defaults to the current dir")
 	flag.Parse()
 
-	router := mux.NewRouter()
+	router = mux.NewRouter()
 	fmt.Println(dir)
 	
 	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./src/main/static"))))
 	router.HandleFunc("/", GetMainPage).Methods("GET")
+	router.HandleFunc("/life_calendar", GetMainPageWithLife)
+	//router.Path("/life_calendar").Queries("lifeId", ".*").HandlerFunc(GetMainPageWithLife)
 	router.HandleFunc("/get_main_page_data", GetMainPageData).Methods("GET")
 	router.HandleFunc("/get_life", GetLife).Methods("GET")
 	router.HandleFunc("/change_note", HandleChangeNote).Methods("POST")
@@ -161,6 +165,25 @@ func GetMainPage(w http.ResponseWriter, r *http.Request){
 	if err != nil{
 		panic(err)
 	}
+}
+
+func GetMainPageWithLife(w http.ResponseWriter, r *http.Request){
+	// TODO
+	//lifeIdString := mux.Vars(r)["life-id"]
+	fmt.Println("GetMainPageWithLife called")
+	lifeIdString := r.URL.Query()["life-id"][0]
+	//lifeIdString := r.FormValue("lifeId")
+	lifeId, err := strconv.Atoi(lifeIdString)
+	if err != nil{
+		http.Error(w, "unparsable life id", 400)
+		return
+	}
+	if !doesLifeExist(lifeId){
+		http.Error(w, "a life with that id doesn't exist", 404)
+		return
+	}
+	TheLife = loadLifeData(lifeId)
+	GetMainPage(w, r)
 }
 
 func HandleLifeManagement(w http.ResponseWriter, r *http.Request){
