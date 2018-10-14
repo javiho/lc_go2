@@ -86,6 +86,24 @@ function initialize(){
         $(this).closest("form").submit();
     });
 
+    $('#find-tb-input').change(function(){
+        const self = $(this);
+        const value = self.val();
+        const valueAsMoment = moment.utc(value);
+        console.log("valueAsMoment", valueAsMoment.format());
+        const nextDay = valueAsMoment.clone().add(1, 'days');
+        const timeBoxesAtSelectedDate = getTimeBoxesByInterval(valueAsMoment, nextDay);
+        if(timeBoxesAtSelectedDate.length === 0) {
+            console.log("no time boxes in selected date");
+            self.addClass("is-invalid");
+            return;
+        }
+        self.removeClass("is-invalid");
+        console.assert(timeBoxesAtSelectedDate.length <= 1, "Bug: time box count:" + timeBoxesAtSelectedDate.length);
+        const timeBoxAtSelectedDate = timeBoxesAtSelectedDate[0];
+        selectTimeBoxes(timeBoxAtSelectedDate, true);
+    });
+
     lcHelpers.addCollapseIconBehavior( $('#notes-control-panel'), $('#toggle-side-bar-button') );
     lcHelpers.addCollapseIconBehavior( $('#note-changing-form-div'), $('#show-note-changing-div-button') );
     lcHelpers.addCollapseIconBehavior( $('#new-note-form-div'), $('#show-new-note-form-div-button') );
@@ -425,6 +443,9 @@ function clearTimeBoxSelection(){
     selectedTimeBoxes = null;
 }
 
+/*
+    Pre-condition: timeBoxes is a jQuery object.
+ */
 function selectTimeBoxes(timeBoxes, clearPreviousSelection=false){
     if(clearPreviousSelection){
         clearTimeBoxSelection();
@@ -787,8 +808,8 @@ function updateNoteVisibilitiesDiv() {
     TODO: Entä jos intervalli on pienempi kuin time boxin aikaväli?
  */
 function getTimeBoxesByInterval(start, end){
-    //console.log("getTimeBoxesByInteval called");
-    //console.log("start:", start, "end:", end);
+    console.log("getTimeBoxesByInteval called");
+    console.log("start:", start, "end:", end);
     const allTimeBoxes = $('#life-calendar .time-box');
     console.assert(start.hour() === 0 && end.hour() === 0, "Hours not 0:", start, end);
     console.assert(allTimeBoxes.length > 0);

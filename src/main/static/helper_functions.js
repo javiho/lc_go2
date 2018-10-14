@@ -177,7 +177,16 @@ const lcHelpers = {};
      */
     context.toInclusiveMoment = function(moment){
         return moment.clone().add(-1, 'days');
+    };
+
+    /*
+        Pre-condition: moment is a Moment.
+        Return value: a different Moment object which is a day more than moment.
+     */
+    context.toExclusiveMoment = function(moment){
+        return moment.clone().add(1, 'days');
     }
+
 
     /*
         Pre-condition: dateString is like 'YYYY-MM-DD'.
