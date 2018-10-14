@@ -168,11 +168,8 @@ func GetMainPage(w http.ResponseWriter, r *http.Request){
 }
 
 func GetMainPageWithLife(w http.ResponseWriter, r *http.Request){
-	// TODO
-	//lifeIdString := mux.Vars(r)["life-id"]
 	fmt.Println("GetMainPageWithLife called")
 	lifeIdString := r.URL.Query()["life-id"][0]
-	//lifeIdString := r.FormValue("lifeId")
 	lifeId, err := strconv.Atoi(lifeIdString)
 	if err != nil{
 		http.Error(w, "unparsable life id", 400)

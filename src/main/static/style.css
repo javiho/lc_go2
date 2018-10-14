@@ -104,6 +104,14 @@
     pointer-events: none; Tämä rivi korjaa IE:llä tulevan ongelman? Kopioitu lähdekoodista */
 }
 
+.inline-form-control.inline-block{
+    display: inline-block;
+}
+
+.max-width-10-em{
+    max-width: 10em;
+}
+
 .max-width-500{
     max-width: 500px;
 }

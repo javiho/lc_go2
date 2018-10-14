@@ -62,7 +62,7 @@ func loadLifeData(lifeId int) *Life{
 		fmt.Println(id, startDateString, endDateString)
 		fmt.Println("refined dates:")
 		fmt.Println(startDate, endDate)
-		newLife = Life{id, startDate, endDate, nil}
+		newLife = Life{id, name, startDate, endDate, nil}
 		lifeFound = true
 	}
 	if !lifeFound{

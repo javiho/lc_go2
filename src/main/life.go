@@ -57,6 +57,7 @@ var defaultEndDate = time.Date(2060, time.July, 15, 0, 0, 0, 0, time.UTC)
 
 type Life struct{
 	DatabaseId int
+	Name string
 	Start time.Time
 	End time.Time
 	Notes []*Note
