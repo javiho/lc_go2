@@ -10,7 +10,6 @@ let lifeCalendar;
 let dragSelect;
 
 //let stringsAndMoments = {}; // { "2018-01-01": moment.utc("2018-01-01"), etc. } // TODO: tämmöistä voi käyttää jos tarvitsee
-//var selectedTimeBox = null; // TODO: Jos dataa laitetaan DOMiin, niin tämänkin voisi
 let selectedTimeBoxes = null; // jQuery object
 let visibleNotes = []; // Stores the Note objects of which are visible in the calendar.
 let zoomLevel = defaultZoomLevel; // Integers. Negatives are for zooming out.
@@ -121,7 +120,6 @@ function initialize(){
 
     $(document).click(function(e){
         const eventTargetJQuery = $(e.target);
-        //console.log("eventTarget:", eventTargetJQuery);
         if(eventTargetJQuery.is(".js-note-rep")){
             noteRepClicked($(e.target));
         }
@@ -269,7 +267,6 @@ function handleLcOptionsFormSubmit(e){
 
 /*
     TODO: performanssi
-    TODO: toimiiko?
     TODO: ensimmäinen luuppi riittänee jos laittaa värityksen ja sen logiikan sinne. Tosin päivämäärät voidaan haluta varastoida myöhempää käyttöä varten.
  */
 function updatePastFutureColoring(){
@@ -325,7 +322,6 @@ function clearPastFutureColornig(){
 /*
     Returns Maps where keys are millisecond timestamps as strings and values are time boxes,
     and keys are ordered chronologically. Returns the Maps like this: {"startTimes": startTimesMap, "endTimes": endTimesMap}
-    TODO: Kai niiden ny tarvii olla stringejä jos käyteään mappia, mut katotaan.
  */
 function getTimeBoxesByStartAndEnd(){
     const timeBoxStartTimes = new Map();
@@ -363,8 +359,6 @@ function getTimeBoxesByStartAndEnd(){
 function zoomLifeCalendar(){
     const newTimeBoxWidth = lcHelpers.getZoomedDimension(timeBoxDefaultWidth, zoomMultiplier, zoomLevel);
     const newTimeBoxHeight = lcHelpers.getZoomedDimension(timeBoxDefaultHeight, zoomMultiplier, zoomLevel);
-    // TODO: näköjään hieman nopeampaa ilman funktiokutsuja, joten vosi laskea arvot etukäteen
-    // TODO: myöskin jokainen property ilmeisesti lasketaan ja piirretään erikseen?
     $('.time-box').css({
         minWidth: newTimeBoxWidth,
         maxWidth: newTimeBoxWidth,
@@ -403,7 +397,6 @@ function refreshDragSelectObject(){
         //selectables: selectables, //Selectables is not used for performance reasons.
         area: document.getElementById('life-calendar'),
         onDragStart: function(elements){
-            console.log("selection started!");
             const cursorCursorPosition = dragSelect.getCurrentCursorPosition();
             const currentGlobalCursorPosition = lcHelpers.posInElementToGlobalPos(cursorCursorPosition, lifeCalendar);
             const tbAtPosition = findTimeBoxNearSelectionCursorPosition(currentGlobalCursorPosition);
@@ -414,11 +407,10 @@ function refreshDragSelectObject(){
                 console.log("Multiselect key pressed, so ignore drag select.");
                 return;
             }
-            console.log("selection ended!");
             const elementsJQuery = $(elements);
             const currentCursorPosition = dragSelect.getCurrentCursorPosition();
             const currentGlobalCursorPosition = lcHelpers.posInElementToGlobalPos(currentCursorPosition, lifeCalendar);
-            const somethingSelected = true; // TODO: mietittävä voiko olla toisin
+            const somethingSelected = true; // TODO: voiko olla toisin
             if(somethingSelected){
                 const selectionStartTb = dragSelectStartElement;
                 const selectionEndTb = findTimeBoxNearSelectionCursorPosition(currentGlobalCursorPosition);
@@ -506,7 +498,6 @@ function getLatestTimeBox(timeBoxes){
 }
 
 function timeBoxClicked(e, multiSelectionOn = false){
-    console.log("time box click'd!");
     let fsTime = performance.now();
     const timeBox = $(e.target);
 
@@ -562,8 +553,6 @@ function noteRepClicked(jQuery){
 }
 
 function showNoteChangingFormDiv(){
-    //$('#note-changing-form-div').removeClass("collapse");
-    //$('#note-changing-form-div').addClass("show");
     $('#note-changing-form-div').collapse("show");
 }
 
@@ -584,10 +573,7 @@ function possiblyClearNoteChangingAndDeletionForm(){
  */
 function populateNoteChangingForm(note){
     const start = note.Start.format(isoDateFormatString);
-    //const end = note.End.format(isoDateFormatString);
-    //console.log("note.End:", note.End.format(isoDateFormatString));
     const inclEndDateString = lcHelpers.toInclusiveMoment(note.End).format(isoDateFormatString);
-    //console.log("incl date string:", inclEndDateString);
     const text = note.Text;
     const color = note.Color;
     const id = note.Id;
@@ -627,22 +613,12 @@ function updateLifeComponents(){
 function updateLifeOptions(){
     $('#life-start-input').val(life.Start.format(isoDateFormatString));
     const lifeEndClone = life.End.clone();
-    // They said moment.js is improvement to native JS Dates. But still, why are they also mutable?
-    // Why should dates ever be mutable? If a date changes, then it's a different date.
-    // It's not like if I agree to meet someone at a certain date, and then change it,
-    // I'll say: "I've got a change of plans, so let's make our meeting date two days bigger."
-    // They would be like: "So you want to change the date?" And I would be like: "No no, let's
-    // keep the same date, let's just make it two days later."
-    // I guess I could try to use Object.freeze() or something, but MDN docs don't unambiguously say
-    // that it DOESN'T fail silently, and that possibility sounds even worse.
-    // Profanities for grepping: fuck, shit, JavaScript
     const lifeEndIncl = lifeEndClone.add(-1, 'days');
     $('#life-end-input').val(lifeEndIncl.format(isoDateFormatString));
     $('#resolution-unit-select').val(resolutionUnit);
 }
 
 function updateLifeCalendar(){
-    //console.log("updating life calendar");
     const lifeCalendarElement = $('#life-calendar');
     const templateStorageDiv = $('#template-storage-div');
     lifeCalendarElement.empty();
@@ -650,7 +626,6 @@ function updateLifeCalendar(){
     const noteBoxElement = templateStorageDiv.children('.js-note-box');
 
     const timeBoxDOs = lifeService.createTimeBoxes(life, resolutionUnit); // timeBoxDataObjects
-    //var newTimeBoxElements = $([]);
     const newTimeBoxElements = [];
     //console.log("thissit", newTimeBoxElements);
     timeBoxDOs.forEach(function(timeBoxDO){
@@ -658,8 +633,6 @@ function updateLifeCalendar(){
         newTimeBoxElement.attr("data-start", timeBoxDO.Start.format(isoDateFormatString));
         newTimeBoxElement.attr("data-end", timeBoxDO.End.format(isoDateFormatString));
         // TODO: intervalli timeboxissa poistettu
-        //var intervalElement = newTimeBoxElement.children('.js-past-future-coloring');
-        //intervalElement.text( lcUtil.intervalToPresentableString(timeBoxDO.Start, timeBoxDO.End, resolutionUnit) );
         timeBoxDO.NoteBoxes.forEach(function(noteBox){
             const newNoteBoxElement = noteBoxElement.clone();
             newNoteBoxElement.attr('data-note-id', noteBox.Note.Id);
@@ -672,21 +645,10 @@ function updateLifeCalendar(){
                 newNoteBoxElement.hide();
             }
         });
-        //newTimeBoxElement.appendTo(lifeCalendarElement); // TODO: Tämä vienee jonkin verran aikaa?
-        //newTimeBoxElements = newTimeBoxElements.add(newTimeBoxElement);
         newTimeBoxElements.push(newTimeBoxElement);
-        //newTimeBoxElements = $.merge(newTimeBoxElements, [newTimeBoxElement]);
-        //console.log("add'd!");
     });
     console.log("about to append ", newTimeBoxElements.length);
     let fsTime = performance.now();
-    /*var firstNewTimeBoxElement = newTimeBoxElements[0];
-    newTimeBoxElements.forEach(function(ntbe){
-        firstNewTimeBoxElement = firstNewTimeBoxElement.add(ntbe);
-    });
-    //console.log("updateLifeCalendar: adding to jQuery took", performance.now() - fsTime);
-    lifeCalendarElement.append(firstNewTimeBoxElement);*/
-    //lifeCalendarElement.append(newTimeBoxElements);
     const arrayAsJQuery = $(newTimeBoxElements).map(function(){
         return this.toArray();
     });
@@ -694,7 +656,6 @@ function updateLifeCalendar(){
     fsTime = performance.now();
     lifeCalendarElement.append(arrayAsJQuery);
     console.log("updateLifeCalendar: adding to DOM took", performance.now() - fsTime);
-    //newTimeBoxElements.appendTo(lifeCalendarElement);
     if(pastFutureColoringEnabled){
         updatePastFutureColoring();
     }
@@ -704,7 +665,6 @@ function updateNotesDiv(){
     console.log("updateNotesDiv called");
     const timeBoxes = selectedTimeBoxes;
     if(timeBoxes === null){
-        //console.log("updateNotesDiv: timeBoxes was null. returning");
         return;
     }
     let isAnyTimeBoxSelected = true;
@@ -764,7 +724,6 @@ function updateNotesDiv(){
 }
 
 function updateNewNoteForm(){
-    //console.log("updating new note form");
     const selectedTimeBoxes = $(selectedTimeBoxRangeSelector);
     const firstSelectedTB = selectedTimeBoxes.first();
     const lastSelectedTB = selectedTimeBoxes.last();
@@ -804,8 +763,6 @@ function updateNoteVisibilitiesDiv() {
     Returns timeBoxes in the DOM of which date-data is in the interval [start, end[. Returns an array.
     Pre-conditions: start and end are Moments. Timeboxes are sorted in increasing order in terms of time
     when selected with $('.time-box')
-
-    TODO: Entä jos intervalli on pienempi kuin time boxin aikaväli?
  */
 function getTimeBoxesByInterval(start, end){
     console.log("getTimeBoxesByInteval called");
@@ -813,10 +770,8 @@ function getTimeBoxesByInterval(start, end){
     const allTimeBoxes = $('#life-calendar .time-box');
     console.assert(start.hour() === 0 && end.hour() === 0, "Hours not 0:", start, end);
     console.assert(allTimeBoxes.length > 0);
-    //console.log("start and end:", start, end);
     const startMs = start.valueOf();
     const endMs = end.valueOf();
-    //console.log("start and end: ", startMs, endMs);
     const timeBoxesInInterval = [];
     let intervalStartEncountered = false;
     let intervalEndEncountered = false;
@@ -828,19 +783,9 @@ function getTimeBoxesByInterval(start, end){
         }
         const tb = $(this);
         // TODO: momenttien muodostamiseen kuluu aikaa, jos niitä tehdään paljon
-        //var tbStart = dataAttrToMoment(tb, 'data-start');
-        //var tbEnd = dataAttrToMoment(tb, 'data-end');
         const tbStartMs = lcHelpers.dataAttrToEpoch(tb, 'data-start');
         const tbEndMs = lcHelpers.dataAttrToEpoch(tb, 'data-end');
-        //console.log("Time box: -----")
-        //console.log("data-start:", tb.attr('data-start'));
-        //console.log("data-end:", tb.attr('data-end'));
-        //console.log(tbEnd, start, tbEnd.isAfter(start));
-        //console.log("tb start and end:", tbStartMs, tbEndMs);
         const isInInterval = tbEndMs > startMs && tbStartMs < endMs;
-        //console.log("is in interval:", tbEndMs, ">", startMs, "=", tbEndMs > startMs,
-        //    "&", tbStartMs, "<", tbEndMs, "=", tbStartMs < endMs,
-        //    "->", isInInterval);
         if(isInInterval){
             timeBoxesInInterval.push(tb);
         }
@@ -860,7 +805,6 @@ function getTimeBoxesByInterval(start, end){
         }
     });
     console.log("getTimeBoxesByInterval: cycled thorugh", counter, "elements. Total elements:", allTimeBoxes.length);
-    //console.log("getTimeBoxesByInterval: there was ", timeBoxesInInterval.length, " time boxes in interval.");
     return timeBoxesInInterval;
 }
 
@@ -870,9 +814,7 @@ function getTimeBoxesByInterval(start, end){
 function setContrastingTimeBoxBorderColors(){
     $('#life-calendar .time-box').each(function(){
         const color = $(this).css("background-color");
-        //console.log("color:", color);
         const asNumbers = lcHelpers.rgbStringToNumbers(color);
-        //console.log("asNumbers:", asNumbers);
         console.assert(asNumbers.length === 3);
         const contrastingColorNumbers = lcHelpers.makeContrastingGrayColor(asNumbers);
         const borderColorCssValue = lcHelpers.rgbArrayToString(contrastingColorNumbers)
@@ -911,7 +853,6 @@ function getTimeBoxAtPoint(coordinates){
         const isTimeBox = element.classList.contains('js-time-box');
         return element.classList.contains('js-time-box');
     });
-    //if( timeBoxes.length < 2 ) console.log("Warning:", timeBoxes.length, "time boxes at position", coordinates);
     const found = timeBoxes.length > 0;
     const timeBox = found ? timeBoxes[0] : null;
     return { timeBox: timeBox, found: found };

@@ -23,21 +23,8 @@ type NoteBox struct{
 type TimeBox struct {
 	Start time.Time
 	End   time.Time
-	//Notes []Note
 	NoteBoxes []NoteBox
 }
-
-/*type LcPageVariables struct{
-	TimeBoxes []TimeBox
-	Notes []*Note
-	LifeStart string
-	LifeEnd string
-	ResolutionUnit string
-	AllResolutionUnits []string
-	NoteVisibilities map[*Note]bool
-	TrueTime time.Time
-	Errors []string
-}*/
 
 // ResolutionUnit and VisibleNotes are only for displaying data.
 // TODO: ne voisivat olla samassa structissa?
@@ -59,24 +46,8 @@ type LifeManagementPageVariables struct{
 	Lives []LifeSummary
 }
 
-type Person struct {
-ID        string   `json:"id,omitempty"`
-Firstname string   `json:"firstname,omitempty"`
-Lastname  string   `json:"lastname,omitempty"`
-Address   *Address `json:"address,omitempty"`
-}
-type Address struct {
-	City  string `json:"city,omitempty"`
-	State string `json:"state,omitempty"`
-}
-
-var people []Person
-
 func main() {
-	log.Println("hello")
-	/*people = append(people, Person{ID: "1", Firstname: "John", Lastname: "Doe", Address: &Address{City: "City X", State: "State X"}})
-	people = append(people, Person{ID: "2", Firstname: "Koko", Lastname: "Doe", Address: &Address{City: "City Z", State: "State Y"}})
-	people = append(people, Person{ID: "3", Firstname: "Francis", Lastname: "Sunday"})*/
+	log.Println("Program started")
 
 	id := betterguid.New()
 	fmt.Println("id: ", id)
@@ -93,7 +64,6 @@ func main() {
 	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./src/main/static"))))
 	router.HandleFunc("/", GetMainPage).Methods("GET")
 	router.HandleFunc("/life_calendar", GetMainPageWithLife)
-	//router.Path("/life_calendar").Queries("lifeId", ".*").HandlerFunc(GetMainPageWithLife)
 	router.HandleFunc("/get_main_page_data", GetMainPageData).Methods("GET")
 	router.HandleFunc("/get_life", GetLife).Methods("GET")
 	router.HandleFunc("/change_note", HandleChangeNote).Methods("POST")
@@ -104,37 +74,17 @@ func main() {
 	router.HandleFunc("/create_life", HandleAddLife).Methods("POST")
 	router.HandleFunc("/change_life", HandleChangeLife).Methods("POST")
 	router.HandleFunc("/delete_life", HandleDeleteLife).Methods("POST")
-	router.HandleFunc("/people", GetPeople).Methods("GET")
-	router.HandleFunc("/people/{id}", GetPerson).Methods("GET")
-	router.HandleFunc("/people/{id}", CreatePerson).Methods("POST")
-	router.HandleFunc("/people/{id}", DeletePerson).Methods("DELETE")
 	srv := &http.Server{
 		Handler:      router,
 		Addr:         "127.0.0.1:8080",
-		// Good practice: enforce timeouts for servers you create!
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
 	log.Fatal(srv.ListenAndServe())
 }
 
-/*func main(){
-	id := betterguid.New()
-	fmt.Println("id: ", id)
-	initializeData()
-	fmt.Println("data initialized")
-
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./src/main/static"))))
-	http.HandleFunc("/favicon.ico", SendNothing)
-	http.HandleFunc("/", SendDefaultView)
-	http.HandleFunc("/note_changed", ChangeAndSendCalendar)
-	http.HandleFunc("/note_added", AddNoteAndSendCalendar)
-	http.HandleFunc("/lc_options_changed", ChangeLcOptionsAndSendCalendar)
-	log.Fatal(http.ListenAndServe(":8080", nil))
-}*/
-
 func initializeData() {
-	ResolutionUnit = Month
+	ResolutionUnit = Week
 	//NoteVisibilities = make(map[*Note]bool)
 
 	//notes := []*Note{
@@ -347,7 +297,6 @@ func changeLcOptions(form url.Values) error {
 	}
 
 	resolutionUnit := timeUnitFromString[resolutionUnitString] // TODO: entä jos on virheellinen stringi?
-	//fmt.Println("new resolution unit:", resolutionUnit)
 	ResolutionUnit = resolutionUnit
 	TheLife.Start = lifeStart
 	TheLife.End = lifeEndExcl
@@ -357,8 +306,6 @@ func changeLcOptions(form url.Values) error {
 func createNoteFromForm(form url.Values) (Note, error) {
 	noteText := form["note-text"][0]
 	if noteText == ""{
-		//log.Println("empty note text, not allow'd!")
-		//return Note{}, errors.New("Note text can't be empty.")
 		fmt.Println("empty note text, replacing with ", defaultNoteText)
 		noteText = defaultNoteText
 	}
@@ -394,8 +341,6 @@ func getExistingNoteFromForm(form url.Values) (*Note, error){
 func changeNoteAccordingToForm(note *Note, form url.Values) error {
 	noteText := form["text"][0]
 	if noteText == ""{
-		//log.Println("empty note text, not allow'd!")
-		//return errors.New("Note text can't be empty.")
 		fmt.Println("empty note text, replacing with ", defaultNoteText)
 		noteText = defaultNoteText
 	}
@@ -428,40 +373,6 @@ func getLifeManagementPageVariables() LifeManagementPageVariables{
 
 
 
-
-
-
-
-
-func GetPeople(w http.ResponseWriter, r *http.Request) {
-	json.NewEncoder(w).Encode(people)
-}
-func GetPerson(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	for _, item := range people {
-		if item.ID == params["id"]{
-			json.NewEncoder(w).Encode(item)
-		}
-	}
-}
-func CreatePerson(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	var person Person
-	_ = json.NewDecoder(r.Body).Decode(&person)
-	person.ID = params["id"]
-	people = append(people, person)
-	json.NewEncoder(w).Encode(people)
-}
-func DeletePerson(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	for index, item := range people {
-		if item.ID == params["id"] {
-			people = append(people[:index], people[index+1:]...)
-			break
-		}
-	}
-	json.NewEncoder(w).Encode(people)
-}
 
 /*
 func ChangeNote(w http.ResponseWriter, r *http.Request) {

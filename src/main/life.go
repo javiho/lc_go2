@@ -63,15 +63,6 @@ type Life struct{
 	Notes []*Note
 }
 
-/*
-// TODO: Miksi compiler sallii tämän? Koska kyseiset constantit ovat inttejä?
-var timeUnitNamesArr = []string{
-	Day: "Day",
-	Week: "Week",
-	Month: "Month",
-	Year: "Year",
-}*/
-
 // TODO: Miten voi tehdä niin, että kovakoodaa time unitit ja niiden stringit vain kerran?
 var timeUnitStrings = []string{"Day", "Week", "Month", "Year"}
 var timeUnitFromString = map[string]TimeUnit{
@@ -80,14 +71,6 @@ var timeUnitFromString = map[string]TimeUnit{
 	"Month": Month,
 	"Year": Year,
 }
-
-/*func getAllTimeUnitStrings() []string{
-	tuStrings := []string{}
-	for k, _ := range timeUnitFromString{
-		tuStrings = append(tuStrings, k)
-	}
-	return tuStrings
-}*/
 
 func getStringFromTimeUnit(tu TimeUnit) string{
 	for k, v := range timeUnitFromString{
@@ -103,17 +86,12 @@ func getNotesByInterval(life *Life, start time.Time, end time.Time) []*Note{
 	/*
 	Pre-condition start < end (ENTÄ JOS ON SAMA?). life.start < life.end
 	 */
-	/*
-	käy läpi kaikki notet lifessä
-		jos ne > is ja ns < ie
-	 */
 	var notesInInterval []*Note
 	for _, n := range life.Notes{
 		if n.End.After(start) && n.Start.Before(end){
 			notesInInterval = append(notesInInterval, n)
 		}
 	}
-	//fmt.Println("getting notes by interval ", start, " to ", end, ". Notes returned: ", len(notesInInterval))
 	return notesInInterval
 }
 
@@ -127,7 +105,6 @@ func (l Life) doesNoteExist(id string) bool{
 }
 
 func (l Life) getNoteById(id string) *Note{
-	// TODO: PITÄISI MIELUUMMIN Notes-attribuutin olla map kuin käyttää tämmöistä luuppia. ID:iden uniikkiuskin olisi taattu.
 	for _, n := range l.Notes{
 		if n.Id == id{
 			return n

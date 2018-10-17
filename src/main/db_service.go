@@ -10,7 +10,6 @@ import (
 )
 
 var Db *sql.DB
-//var lifeId = 1
 
 type LifeSummary struct{
 	Id int
@@ -250,7 +249,5 @@ func checkDbErr(err error){
 	if err != nil{
 		log.Println("Databse error:")
 		log.Fatal(err)
-		//log.Println(err)
-		//panic(err)
 	}
 }

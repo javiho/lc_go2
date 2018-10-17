@@ -16,7 +16,6 @@ const lcHelpers = {};
      */
     context.dataAttrToEpoch = function(jQuery, dateAttr){
         const dateString = jQuery.attr(dateAttr);
-        //console.log(jQuery)
         console.assert(dateString !== undefined, dateAttr, "of", jQuery, "was not found.");
         if(dateString === dataEmptyValue){
             console.log(jQuery);
@@ -69,7 +68,6 @@ const lcHelpers = {};
         const splits = rgbString.split(re);
         const numberStrings = [splits[1], splits[3], splits[5]];
         const numbers = numberStrings.map(s => parseInt(s));
-        //console.log(numbers);
         return numbers;
     };
 

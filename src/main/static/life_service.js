@@ -7,7 +7,6 @@ const lifeService = {};
     context.computeLifetimeUncertaintyStart = function(lifeStartMs, lifeEndMs){
         console.assert(lifeStartMs !== undefined);
         console.assert(lifeEndMs !== undefined);
-        //var lifeDuration = lifeEndMs - lifeStartMs;
         const now = new Date().getTime();
         const remainingLifeDuration = lifeEndMs - now;
         return (remainingLifeDuration / 2) + now;
@@ -22,7 +21,6 @@ const lifeService = {};
     context.uncertaintyFunction = function(intervalEnd, uncertaintyStart, point){
         console.assert(uncertaintyStart <= intervalEnd);
         if(uncertaintyStart === intervalEnd){
-            console.log("uncertaintyFunction: gonna return 1");
             return 1;
         }
         const normalizedIntervalEnd = intervalEnd - uncertaintyStart;
@@ -107,8 +105,6 @@ const lifeService = {};
         Returns an array of time box data objects.
     */
     context.createTimeBoxes = function(life, resolutionUnit){
-        //var lifeStartDate = moment.utc(life.Start);
-        //var lifeEndDate = moment.utc(life.End);
         const lifeStartDate = life.Start;
         const lifeEndDate = life.End;
         console.log(lifeStartDate);
